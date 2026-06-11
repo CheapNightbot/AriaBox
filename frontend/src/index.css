@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "shadcn/tailwind.css";
+@import "tw-animate-css";
 
 @font-face {
     font-family: "Delius";
