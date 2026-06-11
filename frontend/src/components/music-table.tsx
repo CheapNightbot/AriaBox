@@ -15,51 +15,255 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDuration } from "@/lib/utils";
 import type { SearchResults } from "@/types";
-import { MoreHorizontalIcon } from "lucide-react";
+import { MoreHorizontalIcon, UserIcon } from "lucide-react";
 
 export function MusicTable({ musicList }: { musicList: SearchResults }) {
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="text-center font-semibold"></TableHead>
-          <TableHead className="text-center font-semibold">Title</TableHead>
-          <TableHead className="text-center font-semibold">Artists</TableHead>
-          <TableHead className="text-center font-semibold">Album</TableHead>
-          <TableHead className="text-center font-semibold">Duration</TableHead>
-          <TableHead className="text-center font-semibold">🎀</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {musicList.tracks.map((track) => {
-          return (
-            <TableRow key={track.id} className="text-center">
-              <TableCell className="w-25 pl-4">
-                <Avatar className="size-20">
-                  <AvatarImage className="rounded" src={track.album.cover} />
-                  <AvatarFallback className="rounded">
-                    <Skeleton />
-                  </AvatarFallback>
-                </Avatar>
-              </TableCell>
-              <TableCell className="whitespace-normal wrap-break-word">
-                <a
-                  href={track.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:underline"
-                >
-                  {track.title}
-                </a>
-              </TableCell>
-              <TableCell className="whitespace-normal wrap-break-word">
-                {track.artists.map((artist, idx) => {
-                  return (
-                    <>
+    <Tabs defaultValue="tracks">
+      <TabsList className="absolute -translate-y-[2.6rem] -translate-x-[0.1rem] rounded-t">
+        <TabsTrigger value="tracks">Tracks</TabsTrigger>
+        <TabsTrigger value="albums">Albums</TabsTrigger>
+        <TabsTrigger value="artists">Artists</TabsTrigger>
+      </TabsList>
+      <TabsContent value="tracks">
+        {musicList.tracks.length === 0 ? (
+          <div className="h-[clamp(600px,70vh,700px)] w-full grid place-items-center">
+            <p className="text-xl text-muted-foreground animate-in fade-in-60 zoom-in-80 duration-500 ease-in-out">
+              Nothing to show here...⋆｡‧˚ʚ🧸ɞ˚‧｡⋆
+            </p>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-center font-semibold"></TableHead>
+                <TableHead className="text-center font-semibold">
+                  Title
+                </TableHead>
+                <TableHead className="text-center font-semibold">
+                  Artists
+                </TableHead>
+                <TableHead className="text-center font-semibold">
+                  Album
+                </TableHead>
+                <TableHead className="text-center font-semibold">
+                  Duration
+                </TableHead>
+                <TableHead className="text-center font-semibold">🎀</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {musicList.tracks.map((track) => {
+                return (
+                  <TableRow key={track.id} className="text-center">
+                    <TableCell className="w-25 pl-4">
+                      <Avatar className="size-20">
+                        <AvatarImage
+                          className="rounded"
+                          src={track.album.cover}
+                        />
+                        <AvatarFallback className="rounded">
+                          <Skeleton />
+                        </AvatarFallback>
+                      </Avatar>
+                    </TableCell>
+                    <TableCell className="whitespace-normal wrap-break-word">
                       <a
-                        key={artist.id}
+                        href={track.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:underline"
+                      >
+                        {track.title}
+                      </a>
+                    </TableCell>
+                    <TableCell className="whitespace-normal wrap-break-word">
+                      {track.artists.map((artist, idx) => {
+                        return (
+                          <p key={artist.id}>
+                            <a
+                              href={artist.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:underline"
+                            >
+                              {artist.name}
+                            </a>
+                            {idx !== track.artists.length - 1 && <>, </>}
+                          </p>
+                        );
+                      })}
+                    </TableCell>
+                    <TableCell className="whitespace-normal wrap-break-word">
+                      {track.album.url ? (
+                        <a
+                          href={track.album.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:underline"
+                        >
+                          {track.album.title}
+                        </a>
+                      ) : (
+                        track.album.title || track.title
+                      )}
+                    </TableCell>
+                    <TableCell>{formatDuration(track.duration)}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-8"
+                          >
+                            <MoreHorizontalIcon />
+                            <span className="sr-only">Open menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>Save</DropdownMenuItem>
+                          <DropdownMenuItem>Download</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        )}
+      </TabsContent>
+
+      <TabsContent value="albums">
+        {musicList.albums.length === 0 ? (
+          <div className="h-[clamp(600px,70vh,700px)] w-full grid place-items-center">
+            <p className="text-xl text-muted-foreground animate-in fade-in-60 zoom-in-80 duration-500 ease-in-out">
+              Nothing to show here...⋆｡‧˚ʚ🧸ɞ˚‧｡⋆
+            </p>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-center font-semibold"></TableHead>
+                <TableHead className="text-center font-semibold">
+                  Title
+                </TableHead>
+                <TableHead className="text-center font-semibold">
+                  Artists
+                </TableHead>
+                <TableHead className="text-center font-semibold">
+                  Tracks
+                </TableHead>
+                <TableHead className="text-center font-semibold">🎀</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {musicList.albums.map((album) => {
+                return (
+                  <TableRow key={album.id} className="text-center">
+                    <TableCell className="w-25 pl-4">
+                      <Avatar className="size-20">
+                        <AvatarImage className="rounded" src={album.cover} />
+                        <AvatarFallback className="rounded">
+                          <Skeleton />
+                        </AvatarFallback>
+                      </Avatar>
+                    </TableCell>
+                    <TableCell className="whitespace-normal wrap-break-word">
+                      <a
+                        href={album.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:underline"
+                      >
+                        {album.title}
+                      </a>
+                    </TableCell>
+                    <TableCell className="whitespace-normal wrap-break-word">
+                      {album.artists.map((artist, idx) => {
+                        return (
+                          <p key={artist.id}>
+                            <a
+                              href={artist.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:underline"
+                            >
+                              {artist.name}
+                            </a>
+                            {idx !== album.artists.length - 1 && <>, </>}
+                          </p>
+                        );
+                      })}
+                    </TableCell>
+                    <TableCell className="whitespace-normal wrap-break-word">
+                      {album.total_tracks}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-8"
+                          >
+                            <MoreHorizontalIcon />
+                            <span className="sr-only">Open menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>Save</DropdownMenuItem>
+                          <DropdownMenuItem>Download</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        )}
+      </TabsContent>
+
+      <TabsContent value="artists">
+        {musicList.artists.length === 0 ? (
+          <div className="h-[clamp(600px,70vh,700px)] w-full grid place-items-center">
+            <p className="text-xl text-muted-foreground animate-in fade-in-60 zoom-in-80 duration-500 ease-in-out">
+              Nothing to show here...⋆｡‧˚ʚ🧸ɞ˚‧｡⋆
+            </p>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-center font-semibold"></TableHead>
+                <TableHead className="text-center font-semibold">
+                  Name
+                </TableHead>
+                <TableHead className="text-center font-semibold">
+                  Genres
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {musicList.artists.map((artist) => {
+                return (
+                  <TableRow key={artist.id} className="text-center">
+                    <TableCell className="w-25 pl-4">
+                      <Avatar className="size-20">
+                        <AvatarImage className="rounded" src={artist.picture} />
+                        <AvatarFallback className="rounded">
+                          <UserIcon />
+                        </AvatarFallback>
+                      </Avatar>
+                    </TableCell>
+                    <TableCell className="whitespace-normal wrap-break-word">
+                      <a
                         href={artist.url}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -67,44 +271,26 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                       >
                         {artist.name}
                       </a>
-                      {idx !== track.artists.length - 1 && <>, </>}
-                    </>
-                  );
-                })}
-              </TableCell>
-              <TableCell className="whitespace-normal wrap-break-word">
-                {track.album.url ? (
-                  <a
-                    href={track.album.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline"
-                  >
-                    {track.album.title}
-                  </a>
-                ) : (
-                  track.album.title || track.title
-                )}
-              </TableCell>
-              <TableCell>{formatDuration(track.duration)}</TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="size-8">
-                      <MoreHorizontalIcon />
-                      <span className="sr-only">Open menu</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Save</DropdownMenuItem>
-                    <DropdownMenuItem>Download</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
+                    </TableCell>
+                    <TableCell className="whitespace-normal wrap-break-word">
+                      {artist.genres.length === 0
+                        ? "Unknown"
+                        : artist.genres.map((genre, idx) => {
+                            return (
+                              <p key={idx}>
+                                {genre}
+                                {idx !== artist.genres.length - 1 && <>, </>}
+                              </p>
+                            );
+                          })}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        )}
+      </TabsContent>
+    </Tabs>
   );
 }
