@@ -270,7 +270,7 @@ function SearchForm({
                       id="url-search-music"
                       value={field.input ?? ""}
                       aria-invalid={field.errors !== null}
-                      placeholder="Apple Music, Deezer, KKBox or YouTube Music URL here..."
+                      placeholder="You can enter Deezer or YouTube Music URL here..."
                       autoComplete="off"
                     />
                     <InputGroupAddon>
