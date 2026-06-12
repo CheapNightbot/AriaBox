@@ -6,6 +6,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -65,8 +70,8 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                           className="rounded"
                           src={track.album.cover}
                         />
-                        <AvatarFallback className="rounded">
-                          <Skeleton />
+                        <AvatarFallback className="rounded overflow-clip">
+                          <Skeleton className="size-full" />
                         </AvatarFallback>
                       </Avatar>
                     </TableCell>
@@ -83,17 +88,32 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                     <TableCell className="whitespace-normal wrap-break-word">
                       {track.artists.map((artist, idx) => {
                         return (
-                          <p key={artist.id}>
-                            <a
-                              href={artist.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:underline"
-                            >
-                              {artist.name}
-                            </a>
-                            {idx !== track.artists.length - 1 && <>, </>}
-                          </p>
+                          <HoverCard
+                            key={artist.id}
+                            openDelay={100}
+                            closeDelay={100}
+                          >
+                            <HoverCardTrigger asChild>
+                              <a
+                                href={artist.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hover:underline"
+                              >
+                                {artist.name}
+                              </a>
+                            </HoverCardTrigger>
+                            <HoverCardContent className="rounded flex items-center gap-4">
+                              <Avatar className="size-12">
+                                <AvatarImage src={artist.picture} />
+                                <AvatarFallback className="overflow-clip">
+                                  <Skeleton className="size-full" />
+                                </AvatarFallback>
+                              </Avatar>
+                              <p className="text-lg">{artist.name}</p>
+                            </HoverCardContent>
+                            {idx !== track.artists.length - 1 && <>,&nbsp;</>}
+                          </HoverCard>
                         );
                       })}
                     </TableCell>
@@ -169,8 +189,8 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                     <TableCell className="w-25 pl-4">
                       <Avatar className="size-20">
                         <AvatarImage className="rounded" src={album.cover} />
-                        <AvatarFallback className="rounded">
-                          <Skeleton />
+                        <AvatarFallback className="rounded overflow-clip">
+                          <Skeleton className="size-full" />
                         </AvatarFallback>
                       </Avatar>
                     </TableCell>
@@ -187,17 +207,32 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                     <TableCell className="whitespace-normal wrap-break-word">
                       {album.artists.map((artist, idx) => {
                         return (
-                          <p key={artist.id}>
-                            <a
-                              href={artist.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:underline"
-                            >
-                              {artist.name}
-                            </a>
-                            {idx !== album.artists.length - 1 && <>, </>}
-                          </p>
+                          <HoverCard
+                            key={artist.id}
+                            openDelay={100}
+                            closeDelay={100}
+                          >
+                            <HoverCardTrigger asChild>
+                              <a
+                                href={artist.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hover:underline"
+                              >
+                                {artist.name}
+                              </a>
+                            </HoverCardTrigger>
+                            <HoverCardContent className="rounded flex items-center gap-4">
+                              <Avatar className="size-12">
+                                <AvatarImage src={artist.picture} />
+                                <AvatarFallback className="overflow-clip">
+                                  <Skeleton className="size-full" />
+                                </AvatarFallback>
+                              </Avatar>
+                              <p className="text-lg">{artist.name}</p>
+                            </HoverCardContent>
+                            {idx !== album.artists.length - 1 && <>,&nbsp;</>}
+                          </HoverCard>
                         );
                       })}
                     </TableCell>
@@ -257,7 +292,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                     <TableCell className="w-25 pl-4">
                       <Avatar className="size-20">
                         <AvatarImage className="rounded" src={artist.picture} />
-                        <AvatarFallback className="rounded">
+                        <AvatarFallback className="rounded overflow-clip">
                           <UserIcon />
                         </AvatarFallback>
                       </Avatar>
@@ -273,9 +308,9 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                       </a>
                     </TableCell>
                     <TableCell className="whitespace-normal wrap-break-word">
-                      {artist.genres.length === 0
+                      {artist.genres?.length === 0
                         ? "Unknown"
-                        : artist.genres.map((genre, idx) => {
+                        : artist.genres?.map((genre, idx) => {
                             return (
                               <p key={idx}>
                                 {genre}
