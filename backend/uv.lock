@@ -282,14 +282,14 @@ wheels = [
 
 [[package]]
 name = "yutipy"
-version = "5.2.0"
+version = "5.3.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
     { name = "python-dotenv" },
     { name = "ytmusicapi" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ca/5f/a65d080ee6ecfd3f7f5a7bc57f9ded16fd7568f37917d78206fc526dce4b/yutipy-5.2.0.tar.gz", hash = "sha256:b62b5487afc8cd898f4bd95a9b7341e3eabc61e0dda11995c169da7dfaee80f8", size = 108167, upload-time = "2026-06-09T11:28:34.369Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/23/db/e175325b86154fd80669e4c5c1487957ba6958971be786445e7d5b7d5ff1/yutipy-5.3.3.tar.gz", hash = "sha256:837d39f4026ed09ba4054189debbe8225309baf2aa32b50a29af244434d072f5", size = 111157, upload-time = "2026-06-12T15:54:55.861Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/01/0a/6d798299ce19948d26b6cf521d6bece58beef2cb50e3e3584f7287dd023e/yutipy-5.2.0-py3-none-any.whl", hash = "sha256:1bd40cf0d07a0d6679f0ed008fb798853a2eea1e031028303fb2ed0c413054d4", size = 41334, upload-time = "2026-06-09T11:28:33.157Z" },
+    { url = "https://files.pythonhosted.org/packages/17/bb/105e19488b7572821217a592706cc7efdc5aa5aa38c2d4094b12ee373673/yutipy-5.3.3-py3-none-any.whl", hash = "sha256:3619bba93abb98a0cf6d244c14261d5ac3d1f3148c4c7e1050e621d68506fde7", size = 43352, upload-time = "2026-06-12T15:54:54.742Z" },
 ]
