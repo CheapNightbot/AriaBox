@@ -1,5 +1,4 @@
-import { Button } from "@/components/ui/button";
-import { SettingsIcon } from "lucide-react";
+import Settings from "@/components/settings";
 import "./header.css";
 
 function Header() {
@@ -13,11 +12,7 @@ function Header() {
         AriaBox ⨾<span className="rotate">💿</span>✮˚.⋆
       </h1>
 
-      <div className="">
-        <Button size="icon" variant="ghost">
-          <SettingsIcon className="size-1/2" />
-        </Button>
-      </div>
+      <Settings />
     </header>
   );
 }
