@@ -5,6 +5,8 @@ from yutipy.deezer import Deezer
 from yutipy.itunes import Itunes
 from yutipy.musicyt import MusicYT
 
+from app.utils import get_current_settings
+
 bp = Blueprint("search", __name__, url_prefix="/api")
 
 
@@ -14,6 +16,7 @@ def search():
         return {"message": "Missing JSON in request"}, 400
 
     data = request.get_json()
+    settings = get_current_settings()
 
     search_method = data.get("search_method")
     artist = data.get("artist")
@@ -21,15 +24,22 @@ def search():
     url = data.get("music_url")
 
     if search_method == "named_search":
-        return named_search(artist, song)
+        return named_search(
+            artist,
+            song,
+            settings,
+        )
     elif search_method == "url_search":
-        return url_search(url)
+        return url_search(
+            url,
+            settings,
+        )
     else:
         return {"message": "Invalid search method"}, 400
 
 
 # Helper functions ~
-def named_search(artist: str, song: str):
+def named_search(artist: str, song: str, settings: dict):
     if not artist and not song:
         return {
             "message": "Please provide an Artist name, a Song title, or both. At least one field is required."
@@ -51,7 +61,11 @@ def named_search(artist: str, song: str):
     # Try Itunes
     try:
         with Itunes() as itunes:
-            result = itunes.search(artist=artist, song=song)
+            result = itunes.search(
+                artist=artist,
+                song=song,
+                location=settings.get("location", "US").lower(),
+            )
             if result:
                 results["albums"] += result.get("albums", [])
                 results["artists"] += result.get("artists", [])
@@ -61,7 +75,10 @@ def named_search(artist: str, song: str):
 
     # Try MusicYT
     try:
-        with MusicYT() as yt_music:
+        with MusicYT(
+            language=settings.get("language", "en"),
+            location=settings.get("location", "US"),
+        ) as yt_music:
             result = yt_music.search(artist=artist, song=song)
             if result:
                 results["albums"] += result.get("albums", [])
@@ -77,7 +94,7 @@ def named_search(artist: str, song: str):
     return {"results": results}
 
 
-def url_search(url: str):
+def url_search(url: str, settings: dict):
     if not url:
         return {"message": "Please provide a valid music URL."}, 400
 
@@ -124,7 +141,10 @@ def url_search(url: str):
                 resource_type = "album"
 
             if resource_id:
-                with MusicYT() as yt_music:
+                with MusicYT(
+                    language=settings.get("language", "en"),
+                    location=settings.get("location", "US"),
+                ) as yt_music:
                     if resource_type == "track":
                         track = yt_music.get_track(resource_id)
                         if track:
