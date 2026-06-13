@@ -88,7 +88,7 @@ function SearchForm({
     }
   }, [nameForm.errors]);
 
-  // Single shared function for the API call! No more repeating code!
+  // Single shared function for the API call!
   const handleSearch = async (payload: any) => {
     try {
       setLoading(true);
