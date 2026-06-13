@@ -5,7 +5,7 @@ from yutipy.deezer import Deezer
 from yutipy.itunes import Itunes
 from yutipy.musicyt import MusicYT
 
-bp = Blueprint("api", __name__, url_prefix="/api")
+bp = Blueprint("search", __name__, url_prefix="/api")
 
 
 @bp.route("/search", methods=["POST"])
