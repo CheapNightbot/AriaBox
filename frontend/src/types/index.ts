@@ -59,3 +59,8 @@ export interface SearchResults {
   artists: Artist[];
   tracks: Track[];
 }
+
+export interface AppSettings {
+  language: string;
+  location: string;
+}
