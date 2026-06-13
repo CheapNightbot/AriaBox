@@ -1,0 +1,20 @@
+services:
+  ariabox:
+    build: .
+    container_name: ariabox
+    ports:
+      # The right side MUST match HOST_PORT
+      - "8960:8960"
+    volumes:
+      # The right side MUST match DATA_DIR
+      - ./data:/app/data
+    environment:
+      - DATA_DIR=/app/data
+      - DEFAULT_LANGUAGE=en
+      - DEFAULT_LOCATION=US
+      - HOST_URL=0.0.0.0
+      - HOST_PORT=8960
+      # you can generate one using following command:
+      # python -c "import secrets; print(secrets.token_hex())"
+      - SECRET_KEY="change_me_please"
+    restart: unless-stopped
