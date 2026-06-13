@@ -1,3 +1,4 @@
+import { searchMusic } from "@/lib/api";
 import type { SearchResults } from "@/types";
 import type { SubmitHandler } from "@formisch/react";
 import { Form, Field as FormischField, reset, useForm } from "@formisch/react";
@@ -92,28 +93,13 @@ function SearchForm({
   const handleSearch = async (payload: any) => {
     try {
       setLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      const response = await fetch("/api/search", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...payload,
-          search_method: searchMethod,
-        }),
+      const results = await searchMusic({
+        ...payload,
+        search_method: searchMethod,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.message || `Server error: ${response.status}`,
-        );
-      }
-
-      const data = await response.json();
-      setResults(data.results);
+      setResults(results);
     } catch (error: any) {
       toast.error(error.message);
     } finally {

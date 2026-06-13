@@ -1,4 +1,4 @@
-import type { AppSettings } from "@/types";
+import type { AppSettings, SearchResults } from "@/types";
 
 const API_BASE_URL = "/api";
 
@@ -28,4 +28,35 @@ export async function updateSettings(
   }
 
   return response.json();
+}
+
+export async function searchMusic(payload: {
+  artist?: string;
+  song?: string;
+  music_url?: string;
+  search_method: "named_search" | "url_search";
+}): Promise<SearchResults> {
+  const response = await fetch(`${API_BASE_URL}/search`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    let errorMessage = `Server error: ${response.status}`;
+    try {
+      const errorData = await response.json();
+      if (errorData.message) {
+        errorMessage = errorData.message;
+      }
+    } catch {
+      // Ignore if the error response isn't valid JSON
+    }
+    throw new Error(errorMessage);
+  }
+
+  const data = await response.json();
+  return data.results;
 }
