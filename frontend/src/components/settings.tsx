@@ -1,14 +1,11 @@
-import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Field, FieldGroup } from "@/components/ui/field";
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldSet,
+} from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -19,7 +16,6 @@ import {
 } from "@/components/ui/select";
 import { fetchSettings, updateSettings } from "@/lib/api";
 import type { AppSettings } from "@/types";
-import { SettingsIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -198,76 +194,81 @@ function Settings() {
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button size="icon" variant="ghost">
-          <SettingsIcon className="size-1/2" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Settings</DialogTitle>
-          <DialogDescription>
-            These settings affect the response language and location. Note that
-            not all music services respect these settings.
-          </DialogDescription>
-        </DialogHeader>
+    <ScrollArea className="border h-[clamp(600px,85vh,830px)] w-[clamp(600px,90vw,1200px)] rounded-sm pt-8">
+      {isLoading ? (
+        <div className="h-[clamp(600px,70vh,700px)] w-full grid place-items-center">
+          <p className="text-xl text-muted-foreground animate-in fade-in-60 zoom-in-80 duration-500 ease-in-out">
+            <span className="animate-pulse">Loading settings...𓏲 ๋࣭ ࣪ ˖🎐</span>
+          </p>
+        </div>
+      ) : !settings ? (
+        <div className="h-[clamp(600px,70vh,700px)] w-full grid place-items-center">
+          <p className="text-xl text-muted-foreground animate-in fade-in-60 zoom-in-80 duration-500 ease-in-out">
+            Could not load settings.
+          </p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-6 items-center animate-in zoom-in-95 fade-in ease-in-out duration-500">
+          <h2 className="scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0 w-[clamp(600px,60vw,800px)]">
+            Settings
+          </h2>
 
-        {isLoading ? (
-          <div className="h-20 w-full grid content-center justify-items-center">
-            <p className="animate-pulse">Loading settings...</p>
-          </div>
-        ) : !settings ? (
-          <div className="h-20 w-full grid content-center justify-items-center">
-            <p className="animate-pulse">Could not load settings.</p>
-          </div>
-        ) : (
-          <FieldGroup className="gap-6">
-            <Field>
-              <Label htmlFor="language">Language</Label>
-              <Select
-                value={settings.language}
-                onValueChange={handleLanguageChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Language to return results in..." />
-                </SelectTrigger>
-                <SelectContent position="popper">
-                  <SelectGroup>
-                    {Object.entries(availableLanguages).map(([key, value]) => (
-                      <SelectItem key={key} value={key}>
-                        {value}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </Field>
+          <FieldSet className="w-[clamp(600px,60vw,800px)]">
+            <FieldDescription>
+              These settings affect the response language and location. Note
+              that not all music services respect these settings.
+            </FieldDescription>
+            <FieldGroup className="gap-6">
+              <Field>
+                <Label htmlFor="language">Language</Label>
+                <Select
+                  value={settings.language}
+                  onValueChange={handleLanguageChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Language to return results in..." />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    <SelectGroup>
+                      {Object.entries(availableLanguages).map(
+                        ([key, value]) => (
+                          <SelectItem key={key} value={key}>
+                            {value}
+                          </SelectItem>
+                        ),
+                      )}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </Field>
 
-            <Field>
-              <Label htmlFor="location">Location</Label>
-              <Select
-                value={settings.location}
-                onValueChange={handleLocationChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Location to use to fetch results from..." />
-                </SelectTrigger>
-                <SelectContent position="popper">
-                  <SelectGroup>
-                    {Object.entries(availableLocations).map(([key, value]) => (
-                      <SelectItem key={key} value={key}>
-                        {value}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </Field>
-          </FieldGroup>
-        )}
-      </DialogContent>
-    </Dialog>
+              <Field>
+                <Label htmlFor="location">Location</Label>
+                <Select
+                  value={settings.location}
+                  onValueChange={handleLocationChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Location to use to fetch results from..." />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    <SelectGroup>
+                      {Object.entries(availableLocations).map(
+                        ([key, value]) => (
+                          <SelectItem key={key} value={key}>
+                            {value}
+                          </SelectItem>
+                        ),
+                      )}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </Field>
+            </FieldGroup>
+          </FieldSet>
+        </div>
+      )}
+    </ScrollArea>
   );
 }
 

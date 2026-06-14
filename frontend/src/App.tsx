@@ -1,11 +1,8 @@
-import Header from "@/components/header";
+import { MusicTable } from "@/components/music-table";
 import SearchForm from "@/components/search-form";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import type { SearchResults } from "@/types";
 import { useState } from "react";
-import { Toaster } from "sonner";
-import Footer from "@/components/footer";
-import { MusicTable } from "@/components/music-table";
 import { cn } from "./lib/utils";
 
 function App() {
@@ -28,8 +25,6 @@ function App() {
 
   return (
     <>
-      <Toaster richColors />
-      <Header />
       <SearchForm
         loading={loading}
         setLoading={setLoading}
@@ -58,7 +53,6 @@ function App() {
         )}
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
-      <Footer />
     </>
   );
 }

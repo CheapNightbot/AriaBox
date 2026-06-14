@@ -1,4 +1,6 @@
-import Settings from "@/components/settings";
+import { Button } from "@/components/ui/button";
+import { SettingsIcon } from "lucide-react";
+import { NavLink } from "react-router";
 import "./header.css";
 
 function Header() {
@@ -12,7 +14,14 @@ function Header() {
         AriaBox ⨾<span className="rotate">💿</span>✮˚.⋆
       </h1>
 
-      <Settings />
+      <NavLink
+        to="/settings"
+        className={({ isActive }) => isActive && "bg-muted rounded-md"}
+      >
+        <Button asChild size="icon" variant="ghost" className="p-2">
+          <SettingsIcon />
+        </Button>
+      </NavLink>
     </header>
   );
 }
