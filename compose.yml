@@ -16,5 +16,5 @@ services:
       - HOST_PORT=8960
       # you can generate one using following command:
       # python -c "import secrets; print(secrets.token_hex())"
-      - SECRET_KEY="change_me_please"
+      # - SECRET_KEY="change_me_please"
     restart: unless-stopped
