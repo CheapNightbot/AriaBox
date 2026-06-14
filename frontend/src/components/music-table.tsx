@@ -68,7 +68,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                       <Avatar className="size-20">
                         <AvatarImage
                           className="rounded"
-                          src={track.album.cover}
+                          src={track.album?.cover}
                         />
                         <AvatarFallback className="rounded overflow-clip">
                           <Skeleton className="size-full" />
@@ -86,7 +86,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                       </a>
                     </TableCell>
                     <TableCell className="whitespace-normal wrap-break-word">
-                      {track.artists.map((artist, idx) => {
+                      {track.artists?.map((artist, idx) => {
                         return (
                           <HoverCard
                             key={artist.id}
@@ -112,23 +112,25 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                               </Avatar>
                               <p className="text-lg">{artist.name}</p>
                             </HoverCardContent>
-                            {idx !== track.artists.length - 1 && <>,&nbsp;</>}
+                            {idx !== (track.artists?.length ?? 0) - 1 && (
+                              <>,&nbsp;</>
+                            )}
                           </HoverCard>
                         );
                       })}
                     </TableCell>
                     <TableCell className="whitespace-normal wrap-break-word">
-                      {track.album.url ? (
+                      {track.album?.url ? (
                         <a
-                          href={track.album.url}
+                          href={track.album?.url}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="hover:underline"
                         >
-                          {track.album.title}
+                          {track.album?.title}
                         </a>
                       ) : (
-                        track.album.title ?? track.title
+                        (track.album?.title ?? track.title)
                       )}
                     </TableCell>
                     <TableCell>{formatDuration(track.duration)}</TableCell>
@@ -205,7 +207,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                       </a>
                     </TableCell>
                     <TableCell className="whitespace-normal wrap-break-word">
-                      {album.artists.map((artist, idx) => {
+                      {album.artists?.map((artist, idx) => {
                         return (
                           <HoverCard
                             key={artist.id}
@@ -231,7 +233,9 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                               </Avatar>
                               <p className="text-lg">{artist.name}</p>
                             </HoverCardContent>
-                            {idx !== album.artists.length - 1 && <>,&nbsp;</>}
+                            {idx !== (album.artists?.length ?? 0) - 1 && (
+                              <>,&nbsp;</>
+                            )}
                           </HoverCard>
                         );
                       })}
@@ -314,7 +318,9 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                             return (
                               <p key={idx}>
                                 {genre}
-                                {idx !== artist.genres.length - 1 && <>, </>}
+                                {idx !== (artist.genres?.length ?? 0) - 1 && (
+                                  <>, </>
+                                )}
                               </p>
                             );
                           })}
