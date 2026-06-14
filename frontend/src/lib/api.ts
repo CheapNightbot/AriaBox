@@ -9,7 +9,7 @@ export async function fetchSettings(): Promise<AppSettings> {
     throw new Error("Failed to fetch settings from backend...(´;ω;`)");
   }
 
-  return response.json();
+  return response.json() as Promise<AppSettings>;
 }
 
 export async function updateSettings(
@@ -27,7 +27,7 @@ export async function updateSettings(
     throw new Error("Something went wrong updating settings...(,,>﹏<,,)");
   }
 
-  return response.json();
+  return response.json() as Promise<AppSettings>;
 }
 
 export async function searchMusic(payload: {
@@ -47,7 +47,7 @@ export async function searchMusic(payload: {
   if (!response.ok) {
     let errorMessage = `Server error: ${response.status}`;
     try {
-      const errorData = await response.json();
+      const errorData = (await response.json()) as { message: string };
       if (errorData.message) {
         errorMessage = errorData.message;
       }
@@ -57,6 +57,6 @@ export async function searchMusic(payload: {
     throw new Error(errorMessage);
   }
 
-  const data = await response.json();
+  const data = (await response.json()) as { results: Promise<SearchResults> };
   return data.results;
 }

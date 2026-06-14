@@ -16,7 +16,7 @@ function Header() {
 
       <NavLink
         to="/settings"
-        className={({ isActive }) => isActive && "bg-muted rounded-md"}
+        className={({ isActive }) => (isActive ? "bg-muted rounded-md" : "")}
       >
         <Button asChild size="icon" variant="ghost" className="p-2">
           <SettingsIcon />

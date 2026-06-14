@@ -13,7 +13,7 @@ function App() {
     tracks: [],
   });
 
-  const gotResults = (obj) => {
+  const gotResults = (obj: SearchResults) => {
     if (!obj || typeof obj !== "object" || Object.keys(obj).length === 0) {
       return false;
     }

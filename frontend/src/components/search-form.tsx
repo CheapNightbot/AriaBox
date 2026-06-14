@@ -34,7 +34,7 @@ const NameSchema = v.pipe(
     song: v.exactOptional(v.pipe(v.string(), v.trim())),
   }),
   v.check(
-    (input) => !!(input.artist || input.song),
+    (input) => !!(input.artist ?? input.song),
     "Please enter an Artist name, a Song title, or both. At least one field is required.",
   ),
 );
@@ -84,13 +84,17 @@ function SearchForm({
       const errorMessage =
         typeof error === "string"
           ? error
-          : (error as { message?: string }).message || "Validation error";
+          : ((error as { message?: string }).message ?? "Validation error");
       toast.error(errorMessage);
     }
   }, [nameForm.errors]);
 
   // Single shared function for the API call!
-  const handleSearch = async (payload: any) => {
+  const handleSearch = async (payload: {
+    artist?: string;
+    song?: string;
+    music_url?: string;
+  }) => {
     try {
       setLoading(true);
 
@@ -100,8 +104,12 @@ function SearchForm({
       });
 
       setResults(results);
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("An unexpected error occurred");
+      }
     } finally {
       setLoading(false);
     }

@@ -128,7 +128,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                           {track.album.title}
                         </a>
                       ) : (
-                        track.album.title || track.title
+                        track.album.title ?? track.title
                       )}
                     </TableCell>
                     <TableCell>{formatDuration(track.duration)}</TableCell>

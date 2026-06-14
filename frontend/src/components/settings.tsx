@@ -166,7 +166,7 @@ function Settings() {
         setIsLoading(false);
       }
     }
-    loadSettings();
+    void loadSettings();
   }, []);
 
   const handleLanguageChange = async (newLang: string) => {
@@ -223,7 +223,7 @@ function Settings() {
                 <Label htmlFor="language">Language</Label>
                 <Select
                   value={settings.language}
-                  onValueChange={handleLanguageChange}
+                  onValueChange={() => handleLanguageChange}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Language to return results in..." />
@@ -246,7 +246,7 @@ function Settings() {
                 <Label htmlFor="location">Location</Label>
                 <Select
                   value={settings.location}
-                  onValueChange={handleLocationChange}
+                  onValueChange={() => handleLocationChange}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Location to use to fetch results from..." />
