@@ -13,9 +13,13 @@ class Config:
     CONFIG_DIR = os.path.join(DATA_DIR, ".config")
     SETTINGS_FILE = os.path.join(CONFIG_DIR, "settings.json")
     SECRET_KEY_FILE = os.path.join(CONFIG_DIR, ".secret_key")
-    
+
     DEFAULT_LANGUAGE = os.getenv("DEFAULT_LANGUAGE", "en")
     DEFAULT_LOCATION = os.getenv("DEFAULT_LOCATION", "US")
+
+    FRONTEND_DIST_DIR = os.getenv(
+        "FRONTEND_DIST_DIR", os.path.join(project_root, "frontend", "dist")
+    )
 
     HOST_URL = os.getenv("HOST_URL", "127.0.0.1")
     HOST_PORT = int(os.getenv("HOST_PORT", 8960))
