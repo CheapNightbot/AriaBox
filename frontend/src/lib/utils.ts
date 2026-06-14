@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDuration(seconds: number): string {
+export function formatDuration(seconds: number | undefined): string {
   // Check for non-numbers, NaN, Infinity, and negative values
   if (
     typeof seconds !== "number" ||
