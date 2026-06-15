@@ -1,3 +1,4 @@
+import EmptyState from "@/components/empty-state";
 import { MusicTable } from "@/components/music-table";
 import SearchForm from "@/components/search-form";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -45,11 +46,7 @@ function App() {
         ) : gotResults(results) ? (
           <MusicTable musicList={results} />
         ) : (
-          <div className="h-[clamp(600px,70vh,700px)] w-full grid place-items-center">
-            <p className="text-xl text-muted-foreground animate-in fade-in-60 zoom-in-80 duration-500 ease-in-out">
-              Nothing to show here...⋆｡‧˚ʚ🧸ɞ˚‧｡⋆
-            </p>
-          </div>
+          <EmptyState />
         )}
         <ScrollBar orientation="horizontal" />
       </ScrollArea>

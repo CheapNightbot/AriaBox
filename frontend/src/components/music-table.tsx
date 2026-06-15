@@ -1,3 +1,4 @@
+import EmptyState from "@/components/empty-state";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +23,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDuration } from "@/lib/utils";
-import type { SearchResults } from "@/types";
+import type { Artist, SearchResults } from "@/types";
 import { MoreHorizontalIcon, UserIcon } from "lucide-react";
 
 export function MusicTable({ musicList }: { musicList: SearchResults }) {
@@ -35,11 +36,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
       </TabsList>
       <TabsContent value="tracks">
         {musicList.tracks.length === 0 ? (
-          <div className="h-[clamp(600px,70vh,700px)] w-full grid place-items-center">
-            <p className="text-xl text-muted-foreground animate-in fade-in-60 zoom-in-80 duration-500 ease-in-out">
-              Nothing to show here...⋆｡‧˚ʚ🧸ɞ˚‧｡⋆
-            </p>
-          </div>
+          <EmptyState />
         ) : (
           <Table>
             <TableHeader>
@@ -88,34 +85,12 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                     <TableCell className="whitespace-normal wrap-break-word">
                       {track.artists?.map((artist, idx) => {
                         return (
-                          <HoverCard
-                            key={artist.id}
-                            openDelay={100}
-                            closeDelay={100}
-                          >
-                            <HoverCardTrigger asChild>
-                              <a
-                                href={artist.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="hover:underline"
-                              >
-                                {artist.name}
-                              </a>
-                            </HoverCardTrigger>
-                            <HoverCardContent className="rounded flex items-center gap-4">
-                              <Avatar className="size-12">
-                                <AvatarImage src={artist.picture} />
-                                <AvatarFallback className="overflow-clip">
-                                  <Skeleton className="size-full" />
-                                </AvatarFallback>
-                              </Avatar>
-                              <p className="text-lg">{artist.name}</p>
-                            </HoverCardContent>
+                          <>
+                            <ArtistHoverCard artist={artist} />
                             {idx !== (track.artists?.length ?? 0) - 1 && (
                               <>,&nbsp;</>
                             )}
-                          </HoverCard>
+                          </>
                         );
                       })}
                     </TableCell>
@@ -162,11 +137,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
 
       <TabsContent value="albums">
         {musicList.albums.length === 0 ? (
-          <div className="h-[clamp(600px,70vh,700px)] w-full grid place-items-center">
-            <p className="text-xl text-muted-foreground animate-in fade-in-60 zoom-in-80 duration-500 ease-in-out">
-              Nothing to show here...⋆｡‧˚ʚ🧸ɞ˚‧｡⋆
-            </p>
-          </div>
+          <EmptyState />
         ) : (
           <Table>
             <TableHeader>
@@ -209,34 +180,12 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                     <TableCell className="whitespace-normal wrap-break-word">
                       {album.artists?.map((artist, idx) => {
                         return (
-                          <HoverCard
-                            key={artist.id}
-                            openDelay={100}
-                            closeDelay={100}
-                          >
-                            <HoverCardTrigger asChild>
-                              <a
-                                href={artist.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="hover:underline"
-                              >
-                                {artist.name}
-                              </a>
-                            </HoverCardTrigger>
-                            <HoverCardContent className="rounded flex items-center gap-4">
-                              <Avatar className="size-12">
-                                <AvatarImage src={artist.picture} />
-                                <AvatarFallback className="overflow-clip">
-                                  <Skeleton className="size-full" />
-                                </AvatarFallback>
-                              </Avatar>
-                              <p className="text-lg">{artist.name}</p>
-                            </HoverCardContent>
+                          <>
+                            <ArtistHoverCard artist={artist} />
                             {idx !== (album.artists?.length ?? 0) - 1 && (
                               <>,&nbsp;</>
                             )}
-                          </HoverCard>
+                          </>
                         );
                       })}
                     </TableCell>
@@ -271,11 +220,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
 
       <TabsContent value="artists">
         {musicList.artists.length === 0 ? (
-          <div className="h-[clamp(600px,70vh,700px)] w-full grid place-items-center">
-            <p className="text-xl text-muted-foreground animate-in fade-in-60 zoom-in-80 duration-500 ease-in-out">
-              Nothing to show here...⋆｡‧˚ʚ🧸ɞ˚‧｡⋆
-            </p>
-          </div>
+          <EmptyState />
         ) : (
           <Table>
             <TableHeader>
@@ -333,5 +278,31 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
         )}
       </TabsContent>
     </Tabs>
+  );
+}
+
+function ArtistHoverCard({ artist }: { artist: Artist }) {
+  return (
+    <HoverCard key={artist.id} openDelay={100} closeDelay={100}>
+      <HoverCardTrigger asChild>
+        <a
+          href={artist.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:underline"
+        >
+          {artist.name}
+        </a>
+      </HoverCardTrigger>
+      <HoverCardContent className="rounded flex items-center gap-4">
+        <Avatar className="size-12">
+          <AvatarImage src={artist.picture} />
+          <AvatarFallback className="overflow-clip">
+            <Skeleton className="size-full" />
+          </AvatarFallback>
+        </Avatar>
+        <p className="text-lg">{artist.name}</p>
+      </HoverCardContent>
+    </HoverCard>
   );
 }
