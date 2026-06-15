@@ -90,6 +90,11 @@
         0 8px 10px 0px hsl(340 5% 40% / 0.06),
         0 4px 6px -2px hsl(340 5% 40% / 0.06);
     --shadow-2xl: 0 15px 25px 0px hsl(340 5% 40% / 0.08);
+
+    /* Brand colors */
+    --apple-music: #ff4e6b;
+    --deezer: #a238ff;
+    --yt-music: #ff0033;
 }
 
 @theme inline {
@@ -125,6 +130,11 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+
+    /* Brand colors */
+    --color-apple-music: var(--apple-music);
+    --color-deezer: var(--deezer);
+    --color-yt-music: var(--yt-music);
 
     --font-sans: var(--font-sans);
     --font-mono: var(--font-mono);
