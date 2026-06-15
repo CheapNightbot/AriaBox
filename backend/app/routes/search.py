@@ -5,6 +5,7 @@ from yutipy.deezer import Deezer
 from yutipy.itunes import Itunes
 from yutipy.musicyt import MusicYT
 
+from app.logger import logger
 from app.utils import get_current_settings
 
 bp = Blueprint("search", __name__, url_prefix="/api")
@@ -56,7 +57,11 @@ def named_search(artist: str, song: str, settings: dict):
                 results["artists"] += result.get("artists", [])
                 results["tracks"] += result.get("tracks", [])
     except Exception:
-        pass  # TODO: maybe add logging ?
+        logger.exception(
+            "Deezer search failed for artist: %s, song: %s",
+            artist,
+            song,
+        )
 
     # Try Itunes
     try:
@@ -71,7 +76,11 @@ def named_search(artist: str, song: str, settings: dict):
                 results["artists"] += result.get("artists", [])
                 results["tracks"] += result.get("tracks", [])
     except Exception:
-        pass
+        logger.exception(
+            "Apple Music search failed for artist: %s, song: %s",
+            artist,
+            song,
+        )
 
     # Try MusicYT
     try:
@@ -85,7 +94,11 @@ def named_search(artist: str, song: str, settings: dict):
                 results["artists"] += result.get("artists", [])
                 results["tracks"] += result.get("tracks", [])
     except Exception:
-        pass
+        logger.exception(
+            "YouTube Music search failed for artist: %s, song: %s",
+            artist,
+            song,
+        )
 
     # Check if we got absolutely nothing
     if not any(results.values()):
@@ -157,6 +170,10 @@ def url_search(url: str, settings: dict):
             return {"message": "Unsupported music service URL."}, 400
 
     except Exception:
+        logger.exception(
+            "URL search failed for artist: %s, song: %s",
+            url,
+        )
         return {"message": "Something went wrong while searching for music!"}, 500
 
     return {"results": results}
