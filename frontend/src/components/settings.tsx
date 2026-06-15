@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { fetchSettings, updateSettings } from "@/lib/api";
 import type { AppSettings } from "@/types";
 import { useEffect, useState } from "react";
@@ -174,7 +175,7 @@ function Settings() {
     try {
       const updatedData = await updateSettings({ language: newLang });
       setSettings(updatedData);
-      toast.success("Response language has been updated! ദ്ദി(˵ •̀ ᴗ - ˵ ) ✧");
+      toast.success("Language has been updated! ദ്ദി(˵ •̀ ᴗ - ˵ ) ✧");
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Unknown error";
       toast.error(`Failed to update language: ${msg}`);
@@ -193,8 +194,27 @@ function Settings() {
     }
   };
 
+  const handleDownloadToggle = async (checked: boolean) => {
+    if (!settings) return;
+    try {
+      const updatedData = await updateSettings({ enable_downloads: checked });
+      setSettings(updatedData);
+
+      if (checked) {
+        toast.success(
+          "Download feature enabled! Please support artists! (✿ᴗ͈ˬᴗ͈)⁾⁾",
+        );
+      } else {
+        toast.success("Download feature disabled.");
+      }
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      toast.error(`Failed to update settings: ${msg}`);
+    }
+  };
+
   return (
-    <ScrollArea className="border h-[clamp(600px,85vh,830px)] w-[clamp(600px,90vw,1200px)] rounded-sm pt-8">
+    <ScrollArea className="border h-[clamp(600px,85vh,830px)] w-[clamp(600px,90vw,1200px)] rounded-sm">
       {isLoading ? (
         <div className="h-[clamp(600px,70vh,700px)] w-full grid place-items-center">
           <p className="text-xl text-muted-foreground animate-in fade-in-60 zoom-in-80 duration-500 ease-in-out">
@@ -208,14 +228,14 @@ function Settings() {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-6 items-center animate-in zoom-in-95 fade-in ease-in-out duration-500">
+        <div className="flex flex-col gap-6 items-center animate-in zoom-in-95 fade-in ease-in-out duration-500 pt-8">
           <h2 className="scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0 w-[clamp(600px,60vw,800px)]">
             Settings
           </h2>
 
           <FieldSet className="w-[clamp(600px,60vw,800px)]">
             <FieldDescription>
-              These settings affect the response language and location. Note
+              Following settings affect the response language and location. Note
               that not all music services respect these settings.
             </FieldDescription>
             <FieldGroup className="gap-6">
@@ -223,7 +243,9 @@ function Settings() {
                 <Label htmlFor="language">Language</Label>
                 <Select
                   value={settings.language}
-                  onValueChange={() => handleLanguageChange}
+                  onValueChange={(value: string) =>
+                    void handleLanguageChange(value)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Language to return results in..." />
@@ -246,7 +268,9 @@ function Settings() {
                 <Label htmlFor="location">Location</Label>
                 <Select
                   value={settings.location}
-                  onValueChange={() => handleLocationChange}
+                  onValueChange={(value: string) =>
+                    void handleLocationChange(value)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Location to use to fetch results from..." />
@@ -263,6 +287,33 @@ function Settings() {
                     </SelectGroup>
                   </SelectContent>
                 </Select>
+              </Field>
+            </FieldGroup>
+          </FieldSet>
+
+          <FieldSet className="w-[clamp(600px,60vw,800px)]">
+            <FieldDescription>
+              Following setting affect the download functionality. If you want
+              to download songs, you must enable following settings.
+            </FieldDescription>
+            <FieldGroup className="gap-6">
+              <Field>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="enable-downloads">Enable Downloads</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Allow downloading audio. Please respect copyright and
+                      support artists!
+                    </p>
+                  </div>
+                  <Switch
+                    id="enable-downloads"
+                    checked={settings.enable_downloads}
+                    onCheckedChange={(value) =>
+                      void handleDownloadToggle(value)
+                    }
+                  />
+                </div>
               </Field>
             </FieldGroup>
           </FieldSet>

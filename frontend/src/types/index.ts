@@ -63,4 +63,5 @@ export interface SearchResults {
 export interface AppSettings {
   language: string;
   location: string;
+  enable_downloads: boolean;
 }

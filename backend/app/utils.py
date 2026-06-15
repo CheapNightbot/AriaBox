@@ -17,4 +17,5 @@ def get_current_settings() -> dict:
     return {
         "language": current_app.config.get("DEFAULT_LANGUAGE", "en"),
         "location": current_app.config.get("DEFAULT_LOCATION", "US"),
+        "enable_downloads": False,
     }

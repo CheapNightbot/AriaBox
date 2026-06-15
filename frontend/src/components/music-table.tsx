@@ -1,3 +1,4 @@
+import { AppleMusicIcon, DeezerIcon, YouTubeMusicIcon } from "@/assets/icons";
 import EmptyState from "@/components/empty-state";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -22,11 +23,59 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { fetchSettings } from "@/lib/api";
 import { formatDuration } from "@/lib/utils";
-import type { Artist, SearchResults } from "@/types";
+import type { Album, Artist, SearchResults, Track } from "@/types";
 import { MoreHorizontalIcon, UserIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import { toast } from "sonner";
 
 export function MusicTable({ musicList }: { musicList: SearchResults }) {
+  const navigate = useNavigate();
+  const [enableDownloads, setEnableDownloads] = useState<boolean>(false);
+
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const data = await fetchSettings();
+        setEnableDownloads(data.enable_downloads);
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : "Unknown error";
+        toast.error(`Failed to fetch download settings: ${msg}`);
+      }
+    }
+    void loadSettings();
+  }, []);
+
+  const handleApplyMetadata = (item: Track | Album) => {
+    toast.warning("Apply Metadata: NOT IMPLEMENTED YET!");
+  };
+
+  const handleDownload = (
+    event: React.MouseEvent<HTMLDivElement, MouseEvent>,
+  ) => {
+    if (!enableDownloads) {
+      event.preventDefault();
+      toast.info(
+        <p>
+          The downloading feature is disabled by default! If possible, please
+          support artists and purchase the music you love! You can enable this
+          feature in{" "}
+          <span
+            className="underline hover:cursor-pointer hover:text-accent"
+            onClick={() => void navigate("/settings")}
+          >
+            Settings
+          </span>
+          .
+        </p>,
+      );
+    } else {
+      toast.warning("Download: NOT IMPLEMENTED YET!");
+    }
+  };
+
   return (
     <Tabs defaultValue="tracks">
       <TabsList className="absolute -translate-y-[2.6rem] -translate-x-[0.1rem] rounded-t">
@@ -34,6 +83,8 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
         <TabsTrigger value="albums">Albums</TabsTrigger>
         <TabsTrigger value="artists">Artists</TabsTrigger>
       </TabsList>
+
+      {/* --- TRACKS TAB --- */}
       <TabsContent value="tracks">
         {musicList.tracks.length === 0 ? (
           <EmptyState />
@@ -122,8 +173,14 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>Save</DropdownMenuItem>
-                          <DropdownMenuItem>Download</DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleApplyMetadata(track)}
+                          >
+                            Apply Metadata
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => handleDownload(e)}>
+                            Download
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -135,6 +192,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
         )}
       </TabsContent>
 
+      {/* --- ALBUMS TAB --- */}
       <TabsContent value="albums">
         {musicList.albums.length === 0 ? (
           <EmptyState />
@@ -205,8 +263,14 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>Save</DropdownMenuItem>
-                          <DropdownMenuItem>Download</DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleApplyMetadata(album)}
+                          >
+                            Apply Metadata
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => handleDownload(e)}>
+                            Download
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -218,6 +282,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
         )}
       </TabsContent>
 
+      {/* --- ARTISTS TAB --- */}
       <TabsContent value="artists">
         {musicList.artists.length === 0 ? (
           <EmptyState />
@@ -232,6 +297,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                 <TableHead className="text-center font-semibold">
                   Genres
                 </TableHead>
+                <TableHead className="text-center font-semibold">🎀</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -269,6 +335,15 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                               </p>
                             );
                           })}
+                    </TableCell>
+                    <TableCell align="center">
+                      {artist.service_name === "Deezer" ? (
+                        <DeezerIcon className="text-deezer" />
+                      ) : artist.service_name === "iTunes" ? (
+                        <AppleMusicIcon className="text-apple-music" />
+                      ) : (
+                        <YouTubeMusicIcon className="text-yt-music" />
+                      )}
                     </TableCell>
                   </TableRow>
                 );

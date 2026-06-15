@@ -35,6 +35,8 @@ def update_settings():
         settings["language"] = data["language"]
     if "location" in data:
         settings["location"] = data["location"]
+    if "enable_downloads" in data:
+        settings["enable_downloads"] = data["enable_downloads"]
 
     # Save the updated settings back to the file
     os.makedirs(os.path.dirname(settings_file), exist_ok=True)
