@@ -19,13 +19,15 @@ function Header() {
         </Button>
       )}
 
-      <h1
-        id="header-logo"
-        className="flex-1 select-none text-3xl font-semibold tracking-wide hover:cursor-pointer animate-in fade-in blur-in-sm duration-500 ease-in-out"
-        onClick={() => (window.location.href = "/")}
-      >
-        AriaBox ⨾<span className="rotate">💿</span>✮˚.⋆
-      </h1>
+      <div className="flex-1">
+        <h1
+          id="header-logo"
+          className="select-none text-3xl font-semibold tracking-wide hover:cursor-pointer animate-in fade-in blur-in-sm duration-500 ease-in-out w-fit mx-auto"
+          onClick={() => (window.location.href = "/")}
+        >
+          AriaBox ⨾<span className="rotate">💿</span>✮˚.⋆
+        </h1>
+      </div>
 
       <NavLink
         to="/settings"
