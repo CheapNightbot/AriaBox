@@ -133,7 +133,7 @@ function SearchForm({
   setFocus();
 
   return (
-    <div className="w-[clamp(400px,90vw,1200px)] py-3 h-30">
+    <div className="w-[clamp(400px,90vw,1200px)] py-3 h-30 animate-in fade-in slide-in-from-top-10 duration-500 ease-in-out">
       <FieldGroup className="flex flex-row gap-4 items-start justify-center relative">
         <Select value={searchMethod} onValueChange={handleMethodChange}>
           <SelectTrigger>
