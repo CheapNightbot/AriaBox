@@ -2,7 +2,7 @@ import { searchMusic } from "@/lib/api";
 import type { SearchResults } from "@/types";
 import type { SubmitHandler } from "@formisch/react";
 import { Form, Field as FormischField, reset, useForm } from "@formisch/react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import * as v from "valibot";
 
@@ -34,7 +34,8 @@ const NameSchema = v.pipe(
     song: v.exactOptional(v.pipe(v.string(), v.trim())),
   }),
   v.check(
-    (input) => !!(input.artist ?? input.song),
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+    (input) => !!(input.artist || input.song),
     "Please enter an Artist name, a Song title, or both. At least one field is required.",
   ),
 );
@@ -73,21 +74,6 @@ function SearchForm({
     schema: UrlSchema,
     initialInput: { music_url: "" },
   });
-
-  useEffect(() => {
-    if (
-      searchMethod === "named_search" &&
-      nameForm.errors &&
-      nameForm.errors.length > 0
-    ) {
-      const error = nameForm.errors[0];
-      const errorMessage =
-        typeof error === "string"
-          ? error
-          : ((error as { message?: string }).message ?? "Validation error");
-      toast.error(errorMessage);
-    }
-  }, [nameForm.errors]);
 
   // Single shared function for the API call!
   const handleSearch = async (payload: {
@@ -148,7 +134,7 @@ function SearchForm({
 
   return (
     <div className="w-[clamp(400px,90vw,1200px)] py-3 h-30">
-      <FieldGroup className="flex flex-row gap-4 items-start justify-center">
+      <FieldGroup className="flex flex-row gap-4 items-start justify-center relative">
         <Select value={searchMethod} onValueChange={handleMethodChange}>
           <SelectTrigger>
             <SelectValue placeholder="Search by..." />
@@ -222,6 +208,11 @@ function SearchForm({
                 </Field>
               )}
             </FormischField>
+
+            <FieldError
+              className="absolute bottom-0 translate-y-full py-4"
+              errors={nameForm.errors?.map((message) => ({ message }))}
+            />
 
             <Field orientation="horizontal" className="flex-0">
               <Button type="submit" form="name-search" disabled={loading}>
