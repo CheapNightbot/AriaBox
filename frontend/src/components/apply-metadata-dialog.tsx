@@ -237,7 +237,7 @@ function ApplyMetadataDialog({
         </div>
 
         {/* Action Buttons */}
-        <DialogFooter className="sm:justify-end gap-2">
+        <DialogFooter className="justify-center gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
