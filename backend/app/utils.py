@@ -19,3 +19,20 @@ def get_current_settings() -> dict:
         "location": current_app.config.get("DEFAULT_LOCATION", "US"),
         "enable_downloads": False,
     }
+
+
+ALLOWED_EXTENSIONS = {
+    "mp3",
+    "wav",
+    "flac",
+    "m4a",
+    "ogg",
+    "opus",
+    "aac",
+    "wma",
+    "alac",
+}
+
+
+def allowed_file(filename: str) -> bool:
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
