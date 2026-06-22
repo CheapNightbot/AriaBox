@@ -43,10 +43,12 @@ def create_app(config=Config):
             )
 
     # Register blueprints
-    from .routes import frontend, search, settings
+    from .routes import delete, frontend, search, settings, upload
 
     app.register_blueprint(search.bp)
     app.register_blueprint(settings.bp)
+    app.register_blueprint(upload.bp)
+    app.register_blueprint(delete.bp)
     # Register frontend LAST so it doesn't accidentally catch /api requests!
     app.register_blueprint(frontend.bp)
 

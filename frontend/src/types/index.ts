@@ -65,3 +65,10 @@ export interface AppSettings {
   location: string;
   enable_downloads: boolean;
 }
+
+export interface UploadResponse {
+  file_id: string;
+  original_filename: string;
+  suggested_artist: string;
+  suggested_song: string;
+}

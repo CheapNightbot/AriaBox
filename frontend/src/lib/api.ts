@@ -1,4 +1,6 @@
-import type { AppSettings, SearchResults } from "@/types";
+import type { AppSettings, SearchResults, UploadResponse } from "@/types";
+import axios, { type AxiosProgressEvent } from "axios";
+import { toast } from "sonner";
 
 const API_BASE_URL = "/api";
 
@@ -59,4 +61,62 @@ export async function searchMusic(payload: {
 
   const data = (await response.json()) as { results: Promise<SearchResults> };
   return data.results;
+}
+
+export async function uploadAudioFile(
+  file: File,
+  onProgress?: (progress: number) => void,
+): Promise<UploadResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const response = await axios.post<UploadResponse>(
+      `${API_BASE_URL}/upload`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        onUploadProgress: (progressEvent: AxiosProgressEvent) => {
+          if (onProgress && progressEvent.total) {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total,
+            );
+            onProgress(percentCompleted);
+          }
+        },
+      },
+    );
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      const errorData = error.response.data as { message?: string } | undefined;
+      throw new Error(errorData?.message ?? "Upload failed!", { cause: error });
+    }
+
+    throw new Error("Network error occurred during upload!", { cause: error });
+  }
+}
+
+export async function deleteAudioFile(file_id: string, file_ext: string) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/delete`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ file_id, file_ext }),
+    });
+
+    if (!response.ok) {
+      const errorData = (await response.json().catch(() => null)) as {
+        message: string;
+      };
+      const errorMessage =
+        errorData?.message || `Delete failed: ${response.status}`;
+      toast.error(errorMessage);
+    }
+  } catch {
+    toast.error("Failed to delete file. Network error.");
+  }
 }
