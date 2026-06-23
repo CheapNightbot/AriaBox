@@ -1,13 +1,13 @@
 [project]
 name = "backend"
-version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
+version = "0.2.0"
+description = "AriaBox ~"
 requires-python = ">=3.14"
 dependencies = [
     "flask>=3.1.3",
+    "mutagen>=1.48.0",
     "waitress>=3.0.2",
-    "yutipy>=5.1.0",
+    "yutipy>=5.3.4",
 ]
 
 [build-system]
