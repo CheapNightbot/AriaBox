@@ -65,11 +65,13 @@ def named_search(artist: str, song: str, settings: dict):
 
     # Try Itunes
     try:
-        with Itunes() as itunes:
+        with Itunes(
+            language=settings.get("language", "en"),
+            location=settings.get("location", "US"),
+        ) as itunes:
             result = itunes.search(
                 artist=artist,
                 song=song,
-                location=settings.get("location", "US").lower(),
             )
             if result:
                 results["albums"] += result.get("albums", [])
@@ -89,6 +91,7 @@ def named_search(artist: str, song: str, settings: dict):
             location=settings.get("location", "US"),
         ) as yt_music:
             result = yt_music.search(artist=artist, song=song)
+            print(result)
             if result:
                 results["albums"] += result.get("albums", [])
                 results["artists"] += result.get("artists", [])
