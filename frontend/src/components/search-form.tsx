@@ -210,7 +210,7 @@ function SearchForm({
             </FormischField>
 
             <FieldError
-              className="absolute bottom-0 translate-y-full py-4"
+              className="absolute bottom-0 translate-y-full py-2"
               errors={nameForm.errors?.map((message) => ({ message }))}
             />
 
