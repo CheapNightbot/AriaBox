@@ -91,7 +91,6 @@ def named_search(artist: str, song: str, settings: dict):
             location=settings.get("location", "US"),
         ) as yt_music:
             result = yt_music.search(artist=artist, song=song)
-            print(result)
             if result:
                 results["albums"] += result.get("albums", [])
                 results["artists"] += result.get("artists", [])
