@@ -1,0 +1,32 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    hostname: moe-dev
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    volumes:
+      # Mount project code
+      - ..:/workspace:cached,z
+      # Overlay a named volume on `node_modules` & `.venv` to prevent host writes
+      - node_modules:/workspace/frontend/node_modules
+      - python_venv:/workspace/backend/.venv
+    networks:
+      - devnet
+    ports:
+      - "5000:5000"     # Backend: Flask dev server
+      - "5173:5173"     # Frontend: Vite dev server
+      - "8960:8960"     # AriaBox: Prod Server (serves both backend & frontend)
+    environment:
+      PNPM_HOME: "/home/moe/.local/share/pnpm"
+
+networks:
+  devnet:
+    driver: bridge
+
+volumes:
+  node_modules:
+  python_venv:
