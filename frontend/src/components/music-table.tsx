@@ -139,12 +139,12 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                       <TableCell className="whitespace-normal wrap-break-word">
                         {track.artists?.map((artist, idx) => {
                           return (
-                            <>
+                            <div key={artist.id} className="contents">
                               <ArtistHoverCard artist={artist} />
                               {idx !== (track.artists?.length ?? 0) - 1 && (
                                 <>,&nbsp;</>
                               )}
-                            </>
+                            </div>
                           );
                         })}
                       </TableCell>
