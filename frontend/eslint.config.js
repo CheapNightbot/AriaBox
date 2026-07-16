@@ -21,5 +21,8 @@ export default defineConfig([
       },
       globals: globals.browser,
     },
+    rules: {
+      "@typescript-eslint/prefer-nullish-coalescing": "off",
+    },
   },
 ]);
