@@ -81,31 +81,27 @@ def _download_cover(url: str) -> Optional[tuple[bytes, str]]:
     """
     Download cover art and guess MIME type from URL.
     Returns (bytes, mime_type) or None if download fails.
-
-    ⚠ Warning
-    ----------
-
-    This is not very secure way to do it! For now me think it fine fine,
-    but it not good to just trust the URL and download it assuming it's image!!
-    So me will get back to it later ~
     """
     if not url:
         return None
 
     try:
+        # Make a HEAD request first (this only downloads the headers, NOT the file!)
+        head_response = requests.head(url, timeout=5, allow_redirects=True)
+        content_type = head_response.headers.get("Content-Type", "").lower()
+
+        # Check if the server claims it is an image
+        if not content_type.startswith("image/"):
+            logger.warning(f"URL does not point to an image: {content_type}")
+            return None
+
+        # If it is an image, THEN download it
         response = requests.get(url, timeout=10)
         response.raise_for_status()
         image_data = response.content
 
-        # Guess MIME type from URL extension
-        url_lower = url.lower()
-        if ".png" in url_lower:
-            mime_type = "image/png"
-        elif ".webp" in url_lower:
-            mime_type = "image/webp"
-        else:
-            # Default to JPEG (most common)
-            mime_type = "image/jpeg"
+        # Use the actual Content-Type from the server, or fallback
+        mime_type = content_type if content_type in ["image/jpeg", "image/png", "image/webp"] else "image/jpeg"
 
         logger.info(f"Downloaded cover art: {mime_type} ({len(image_data)} bytes)")
         return image_data, mime_type
