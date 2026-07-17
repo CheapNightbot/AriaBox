@@ -19,4 +19,4 @@ module-name = "app"
 module-root = ""
 
 [project.scripts]
-ariabox = "app.run:run_server"
+ariabox = "run:run_server"
