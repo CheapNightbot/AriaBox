@@ -64,6 +64,7 @@ export interface AppSettings {
   language: string;
   location: string;
   enable_downloads: boolean;
+  auto_save_to_library: boolean;
 }
 
 export interface UploadResponse {

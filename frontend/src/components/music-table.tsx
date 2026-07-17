@@ -116,7 +116,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                   return (
                     <TableRow key={track.id} className="text-center">
                       <TableCell className="w-25 pl-4">
-                        <Avatar className="size-20">
+                        <Avatar className="size-20 after:rounded">
                           <AvatarImage
                             className="rounded"
                             src={track.album?.cover}
@@ -229,7 +229,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                   return (
                     <TableRow key={album.id} className="text-center">
                       <TableCell className="w-25 pl-4">
-                        <Avatar className="size-20">
+                        <Avatar className="size-20 after:rounded">
                           <AvatarImage className="rounded" src={album.cover} />
                           <AvatarFallback className="rounded overflow-clip">
                             <Skeleton className="size-full" />
@@ -324,7 +324,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                   return (
                     <TableRow key={artist.id} className="text-center">
                       <TableCell className="w-25 pl-4">
-                        <Avatar className="size-20">
+                        <Avatar className="size-20 after:rounded">
                           <AvatarImage
                             className="rounded"
                             src={artist.picture}

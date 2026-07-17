@@ -1,5 +1,4 @@
 import type { AppSettings, SearchResults, UploadResponse } from "@/types";
-import axios, { type AxiosProgressEvent } from "axios";
 import { toast } from "sonner";
 
 const API_BASE_URL = "/api";
@@ -70,34 +69,57 @@ export async function uploadAudioFile(
   const formData = new FormData();
   formData.append("file", file);
 
-  try {
-    const response = await axios.post<UploadResponse>(
-      `${API_BASE_URL}/upload`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent: AxiosProgressEvent) => {
-          if (onProgress && progressEvent.total) {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total,
-            );
-            onProgress(percentCompleted);
-          }
-        },
-      },
-    );
+  return new Promise<UploadResponse>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
 
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response) {
-      const errorData = error.response.data as { message?: string } | undefined;
-      throw new Error(errorData?.message ?? "Upload failed!", { cause: error });
+    xhr.open("POST", `${API_BASE_URL}/upload`);
+
+    // Track upload progress
+    if (onProgress) {
+      xhr.upload.onprogress = (event: ProgressEvent) => {
+        if (event.lengthComputable) {
+          const percentCompleted = Math.round(
+            (event.loaded * 100) / event.total,
+          );
+          onProgress(percentCompleted);
+        }
+      };
     }
 
-    throw new Error("Network error occurred during upload!", { cause: error });
-  }
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const data = JSON.parse(xhr.responseText) as UploadResponse;
+          resolve(data);
+        } catch (parseError) {
+          reject(
+            new Error("Failed to parse server response", { cause: parseError }),
+          );
+        }
+      } else {
+        let errorMessage = "Upload failed!";
+        try {
+          const errorData = JSON.parse(xhr.responseText) as {
+            message?: string;
+          };
+          errorMessage = errorData?.message ?? errorMessage;
+        } catch {
+          // Fall back to default message
+        }
+        reject(new Error(errorMessage, { cause: xhr.status }));
+      }
+    };
+
+    xhr.onerror = () => {
+      reject(
+        new Error("Network error occurred during upload!", {
+          cause: xhr.statusText,
+        }),
+      );
+    };
+
+    xhr.send(formData);
+  });
 }
 
 export async function deleteAudioFile(file_id: string, file_ext: string) {
@@ -119,4 +141,41 @@ export async function deleteAudioFile(file_id: string, file_ext: string) {
   } catch {
     toast.error("Failed to delete file. Network error.");
   }
+}
+
+export async function applyMetadata(
+  fileId: string,
+  fileExt: string,
+  trackId?: number,
+  albumId?: number,
+  service?: string,
+  overwrite = true,
+): Promise<Response> {
+  const response = await fetch(`${API_BASE_URL}/tag`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      file_id: fileId,
+      file_ext: fileExt,
+      track_id: trackId,
+      album_id: albumId,
+      service: service,
+      overwrite: overwrite,
+    }),
+  });
+
+  if (!response.ok) {
+    let errorMessage = `Server error: ${response.status}`;
+    try {
+      const errorData = (await response.json()) as { message?: string };
+      if (errorData.message) {
+        errorMessage = errorData.message;
+      }
+    } catch {
+      // Ignore if not valid JSON
+    }
+    throw new Error(errorMessage);
+  }
+
+  return response;
 }

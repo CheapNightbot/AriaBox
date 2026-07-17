@@ -37,6 +37,8 @@ def update_settings():
         settings["location"] = data["location"]
     if "enable_downloads" in data:
         settings["enable_downloads"] = data["enable_downloads"]
+    if "auto_save_to_library" in data:
+        settings["auto_save_to_library"] = data["auto_save_to_library"]
 
     # Save the updated settings back to the file
     os.makedirs(os.path.dirname(settings_file), exist_ok=True)

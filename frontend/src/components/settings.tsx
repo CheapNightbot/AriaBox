@@ -200,13 +200,26 @@ function Settings() {
       const updatedData = await updateSettings({ enable_downloads: checked });
       setSettings(updatedData);
 
-      if (checked) {
-        toast.success(
-          "Download feature enabled! Please support artists! (✿ᴗ͈ˬᴗ͈)⁾⁾",
-        );
-      } else {
-        toast.success("Download feature disabled.");
-      }
+      toast.success(
+        checked
+          ? "Download feature enabled! Please support artists! (✿ᴗ͈ˬᴗ͈)⁾⁾"
+          : "Download feature disabled.",
+      );
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      toast.error(`Failed to update settings: ${msg}`);
+    }
+  };
+
+  const handleAutosaveToggle = async (checked: boolean) => {
+    if (!settings) return;
+    try {
+      const updatedData = await updateSettings({
+        auto_save_to_library: checked,
+      });
+      setSettings(updatedData);
+
+      toast.success(checked ? "Auto-save enabled!" : "Auto-save disabled.");
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Unknown error";
       toast.error(`Failed to update settings: ${msg}`);
@@ -291,18 +304,16 @@ function Settings() {
             </FieldGroup>
           </FieldSet>
 
+          <hr className="w-[clamp(600px,60vw,800px)] my-2" />
+
           <FieldSet className="w-[clamp(600px,60vw,800px)]">
-            <FieldDescription>
-              Following setting affect the download functionality. If you want
-              to download songs, you must enable following settings.
-            </FieldDescription>
             <FieldGroup className="gap-6">
               <Field>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <div className="space-y-0.5">
                     <Label htmlFor="enable-downloads">Enable Downloads</Label>
                     <p className="text-sm text-muted-foreground">
-                      Allow downloading audio. Please respect copyright and
+                      Allow downloading songs. Please respect copyright and
                       support artists!
                     </p>
                   </div>
@@ -311,6 +322,25 @@ function Settings() {
                     checked={settings.enable_downloads}
                     onCheckedChange={(value) =>
                       void handleDownloadToggle(value)
+                    }
+                  />
+                </div>
+              </Field>
+
+              <Field>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="auto-save">Auto-save to Library</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Save tagged/downloaded files directly to your music
+                      library folder instead of downloading manually.
+                    </p>
+                  </div>
+                  <Switch
+                    id="auto-save"
+                    checked={settings.auto_save_to_library}
+                    onCheckedChange={(value) =>
+                      void handleAutosaveToggle(value)
                     }
                   />
                 </div>

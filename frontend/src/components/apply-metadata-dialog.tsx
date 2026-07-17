@@ -1,5 +1,5 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -7,25 +7,28 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Progress } from "@/components/ui/progress";
-import { deleteAudioFile, uploadAudioFile } from "@/lib/api";
-import type { Album, Track } from "@/types";
-import { AlertCircle, CheckCircle2, FileAudio, Upload } from "lucide-react";
+} from "@/components/ui/dialog"
+import { Field } from "@/components/ui/field"
+import { Label } from "@/components/ui/label"
+import { Progress } from "@/components/ui/progress"
+import { Switch } from "@/components/ui/switch"
+import { applyMetadata, deleteAudioFile, uploadAudioFile } from "@/lib/api"
+import type { Album, Track } from "@/types"
+import { AlertCircle, CheckCircle2, FileAudio, Upload } from "lucide-react"
 import {
   type ChangeEvent,
   type DragEvent,
   useEffect,
   useRef,
   useState,
-} from "react";
-import { toast } from "sonner";
+} from "react"
+import { toast } from "sonner"
 
 interface ApplyMetadataDialogProps {
-  track: Track | null;
-  album: Album | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  track: Track | null
+  album: Album | null
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
 
 function ApplyMetadataDialog({
@@ -34,95 +37,158 @@ function ApplyMetadataDialog({
   open,
   onOpenChange,
 }: ApplyMetadataDialogProps) {
-  const [file, setFile] = useState<File | null>(null);
-  const [progress, setProgress] = useState(0);
+  const [file, setFile] = useState<File | null>(null)
+  const [progress, setProgress] = useState(0)
   const [status, setStatus] = useState<
     "idle" | "uploading" | "success" | "error"
-  >("idle");
-  const [fileId, setFileId] = useState<string | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  >("idle")
+  const [fileId, setFileId] = useState<string | null>(null)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isApplying, setIsApplying] = useState(false)
+  const [overwriteMode, setOverwriteMode] = useState(true) // Default to overwrite
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Reset everything when the dialog closes or the selection changes
   useEffect(() => {
     if (!open) {
-      setFile(null);
-      setProgress(0);
-      setStatus("idle");
-      setFileId(null);
-      setErrorMsg(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      setFile(null)
+      setProgress(0)
+      setStatus("idle")
+      setFileId(null)
+      setErrorMsg(null)
+      if (fileInputRef.current) fileInputRef.current.value = ""
     }
-  }, [open, track, album]);
+  }, [open, track, album])
 
   const handleFileChange = async (selectedFile: File) => {
-    setFile(selectedFile);
-    setStatus("uploading");
-    setProgress(0);
-    setErrorMsg(null);
+    setFile(selectedFile)
+    setStatus("uploading")
+    setProgress(0)
+    setErrorMsg(null)
 
     try {
-      const response = await uploadAudioFile(selectedFile, setProgress);
-      setFileId(response.file_id);
-      setStatus("success");
-      toast.success("File uploaded successfully! ( ⸝⸝´꒳`⸝⸝)");
+      const response = await uploadAudioFile(selectedFile, setProgress)
+      setFileId(response.file_id)
+      setStatus("success")
+      toast.success("File uploaded successfully! ( ⸝⸝´꒳`⸝⸝)")
     } catch (err) {
-      setStatus("error");
-      setErrorMsg(err instanceof Error ? err.message : "Upload failed");
-      toast.error("Upload failed. Please try again. (ó﹏ò｡)");
+      setStatus("error")
+      setErrorMsg(err instanceof Error ? err.message : "Upload failed")
+      toast.error("Upload failed. Please try again. (ó﹏ò｡)")
     }
-  };
+  }
 
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile) void handleFileChange(droppedFile);
-  };
+    e.preventDefault()
+    const droppedFile = e.dataTransfer.files[0]
+    if (droppedFile) void handleFileChange(droppedFile)
+  }
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-  };
+    e.preventDefault()
+  }
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
-    if (selected) void handleFileChange(selected);
-  };
+    const selected = e.target.files?.[0]
+    if (selected) void handleFileChange(selected)
+  }
 
   const handleReset = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setFile(null);
-    setFileId(null);
-    setStatus("idle");
-    setProgress(0);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
+    e.stopPropagation()
+    setFile(null)
+    setFileId(null)
+    setStatus("idle")
+    setProgress(0)
+    if (fileInputRef.current) fileInputRef.current.value = ""
+  }
 
-  const handleApply = () => {
-    if (!fileId) return;
+  const handleApply = async () => {
+    if (!fileId || !file || (!track && !album)) return
 
-    // TODO: Will handle both track and album tagging here ~ !!!!
-    if (track) {
-      toast.info("Applying track metadata... (Coming soon!)");
-    } else if (album) {
-      toast.info("Applying album metadata... (Coming soon!)");
+    setIsApplying(true)
+    try {
+      const fileExt = file.name.split(".").pop()?.toLowerCase() || ""
+      const trackId = track?.id
+      const albumId = album?.id
+      const service =
+        track?.service_name?.toLowerCase() ||
+        album?.service_name?.toLowerCase()
+
+      const response = await applyMetadata(
+        fileId,
+        fileExt,
+        trackId,
+        albumId,
+        service,
+        overwriteMode,
+      )
+
+      // Check what type of response we got
+      const contentType = response.headers.get("content-type")
+
+      if (contentType?.includes("application/json")) {
+        // Auto-saved to library (JSON response)
+        const data = (await response.json()) as { message: string }
+        toast.success(data.message)
+      } else {
+        // File download (binary response)
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement("a")
+        a.href = url
+
+        // Get filename from Content-Disposition header
+        const disposition = response.headers.get("content-disposition")
+        let filename = `tagged-file.${fileExt}` // Safe fallback with extension
+
+        if (disposition) {
+          // Try to match UTF-8 encoded filenames first (e.g., filename*=UTF-8''%E3%83%A8...)
+          const utf8Match = disposition.match(/filename\*=UTF-8''([^;]+)/i)
+          if (utf8Match && utf8Match[1]) {
+            filename = decodeURIComponent(utf8Match[1].trim())
+          } else {
+            // Fallback to regular filename="..." (NO 'g' FLAG!)
+            const regularMatch = disposition.match(/filename="?([^";]+)"?/i)
+            if (regularMatch && regularMatch[1]) {
+              filename = regularMatch[1].trim()
+            }
+          }
+        }
+
+        a.download = filename
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+        window.URL.revokeObjectURL(url)
+
+        toast.success("Metadata applied and downloaded!")
+      }
+
+      onOpenChange(false)
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to apply metadata"
+      toast.error(message)
+    } finally {
+      setIsApplying(false)
     }
-  };
+  }
 
   // If neither track nor album is selected, don't render
-  if (!track && !album) return null;
+  if (!track && !album) return null
 
   // Determine what we're showing and get the display data
-  const isTrack = !!track;
-  const displayTitle = isTrack ? track?.title : album?.title;
+  const isTrack = !!track
+  const displayTitle = isTrack ? track?.title : album?.title
   const displayArtists = isTrack
     ? track?.artists?.map((a) => a.name).join(", ")
-    : album?.artists?.map((a) => a.name).join(", ");
+    : album?.artists?.map((a) => a.name).join(", ")
   const displayAlbum = isTrack
     ? track?.album?.title
-    : `${album?.total_tracks ?? "?"} tracks`;
-  const displayCover = isTrack ? track?.album?.cover : album?.cover;
+    : `${album?.total_tracks ?? "?"} tracks`
+  const displayCover = isTrack ? track?.album?.cover : album?.cover
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -153,6 +219,26 @@ function ApplyMetadataDialog({
             </span>
           </div>
         </div>
+
+        <Field>
+          <div className="flex items-center justify-between gap-2">
+            <div className="space-y-0.5">
+              <Label htmlFor="metadata-mode">
+                {overwriteMode ? "Overwrite Mode" : "Append Mode"}
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {overwriteMode
+                  ? "Remove all existing metadata and write only the new tags."
+                  : "Keep existing metadata and add/update only the new tags."}
+              </p>
+            </div>
+            <Switch
+              id="metadata-mode"
+              checked={overwriteMode}
+              onCheckedChange={setOverwriteMode}
+            />
+          </div>
+        </Field>
 
         {/* The Dropzone Area */}
         <div
@@ -205,14 +291,16 @@ function ApplyMetadataDialog({
                 className="text-xs h-auto p-0"
                 disabled={isDeleting}
                 onClick={(e) => {
-                  e.stopPropagation();
-                  setIsDeleting(true);
-                  handleReset(e);
-                  void deleteAudioFile(
-                    fileId,
-                    file.name.split(".").pop()?.toLowerCase() ?? "",
-                  );
-                  setIsDeleting(false);
+                  e.stopPropagation()
+                  setIsDeleting(true)
+                  handleReset(e)
+                  if (fileId) {
+                    void deleteAudioFile(
+                      fileId,
+                      file.name.split(".").pop()?.toLowerCase() ?? "",
+                    )
+                  }
+                  setIsDeleting(false)
                 }}
               >
                 {isDeleting ? "Removing..." : "Remove file"}
@@ -241,13 +329,16 @@ function ApplyMetadataDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleApply} disabled={status !== "success"}>
-            Apply Metadata & Download
+          <Button
+            onClick={() => void handleApply()}
+            disabled={status !== "success" || isApplying}
+          >
+            {isApplying ? "Applying..." : "Apply Metadata & Download"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
-export default ApplyMetadataDialog;
+export default ApplyMetadataDialog

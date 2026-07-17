@@ -1,17 +1,20 @@
-import Footer from "@/components/footer";
-import Header from "@/components/header";
-import { Outlet } from "react-router";
-import { Toaster } from "sonner";
+import Footer from "@/components/footer"
+import Header from "@/components/header"
+import { TooltipProvider } from "@/components/ui/tooltip"
+import { Outlet } from "react-router"
+import { Toaster } from "sonner"
 
 function BaseLayout() {
   return (
     <>
-      <Toaster richColors />
-      <Header />
-      <Outlet />
-      <Footer />
+      <TooltipProvider>
+        <Toaster richColors />
+        <Header />
+        <Outlet />
+        <Footer />
+      </TooltipProvider>
     </>
-  );
+  )
 }
 
-export default BaseLayout;
+export default BaseLayout

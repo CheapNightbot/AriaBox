@@ -1,11 +1,17 @@
-import { Button } from "@/components/ui/button";
-import { ArrowLeftIcon, SettingsIcon } from "lucide-react";
-import { NavLink, useLocation, useNavigate } from "react-router";
-import "./header.css";
+import { Button } from "@/components/ui/button"
+import { ArrowLeftIcon, SettingsIcon } from "lucide-react"
+import { NavLink, useLocation, useNavigate } from "react-router"
+import "./header.css"
+import DevTools from "@/components/dev-tools"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 function Header() {
-  const location = useLocation();
-  const navigate = useNavigate();
+  const location = useLocation()
+  const navigate = useNavigate()
 
   return (
     <header className="text-center flex items-center justify-center w-[clamp(400px,90vw,1200px)] py-4 mb-2 relative">
@@ -29,16 +35,25 @@ function Header() {
         </h1>
       </div>
 
+      {import.meta.env.DEV && <DevTools />}
+
       <NavLink
         to="/settings"
         className={({ isActive }) => (isActive ? "bg-muted rounded-md" : "")}
       >
-        <Button asChild size="icon" variant="ghost" className="p-2">
-          <SettingsIcon />
-        </Button>
+        <Tooltip delayDuration={500}>
+          <TooltipTrigger>
+            <Button asChild size="icon" variant="ghost" className="p-2">
+              <SettingsIcon />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Settings</p>
+          </TooltipContent>
+        </Tooltip>
       </NavLink>
     </header>
-  );
+  )
 }
 
-export default Header;
+export default Header

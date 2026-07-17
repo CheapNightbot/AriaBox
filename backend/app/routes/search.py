@@ -5,6 +5,7 @@ from yutipy.deezer import Deezer
 from yutipy.itunes import Itunes
 from yutipy.musicyt import MusicYT
 
+from app.cache import get_cached_search, store_search_cache, store_search_results
 from app.logger import logger
 from app.utils import get_current_settings
 
@@ -46,6 +47,17 @@ def named_search(artist: str, song: str, settings: dict):
             "message": "Please provide an Artist name, a Song title, or both. At least one field is required."
         }, 400
 
+    # Check cache first!
+    cached_results = get_cached_search(
+        artist or "",
+        song or "",
+        settings.get("location", "US"),
+    )
+
+    if cached_results:
+        logger.info("Returning cached search results")
+        return {"results": cached_results}
+
     results = {"albums": [], "artists": [], "tracks": []}
 
     # Try Deezer
@@ -56,6 +68,7 @@ def named_search(artist: str, song: str, settings: dict):
                 results["albums"] += result.get("albums", [])
                 results["artists"] += result.get("artists", [])
                 results["tracks"] += result.get("tracks", [])
+
     except Exception:
         logger.exception(
             "Deezer search failed for artist: %s, song: %s",
@@ -77,6 +90,7 @@ def named_search(artist: str, song: str, settings: dict):
                 results["albums"] += result.get("albums", [])
                 results["artists"] += result.get("artists", [])
                 results["tracks"] += result.get("tracks", [])
+
     except Exception:
         logger.exception(
             "Apple Music search failed for artist: %s, song: %s",
@@ -95,18 +109,41 @@ def named_search(artist: str, song: str, settings: dict):
                 results["albums"] += result.get("albums", [])
                 results["artists"] += result.get("artists", [])
                 results["tracks"] += result.get("tracks", [])
+
     except Exception:
         logger.exception(
             "YouTube Music search failed for artist: %s, song: %s",
             artist,
             song,
         )
-
     # Check if we got absolutely nothing
     if not any(results.values()):
         return {"message": "No results found or all services failed."}, 404
 
-    return {"results": results}
+    # Combine all results for caching
+    all_results = {
+        "albums": results["albums"],
+        "artists": results["artists"],
+        "tracks": results["tracks"],
+    }
+
+    # Cache the search results
+    store_search_cache(
+        artist or "",
+        song or "",
+        settings.get("location", "US"),
+        all_results,
+    )
+
+    # Also cache individual items for tagging
+    store_search_results("deezer", results["tracks"])
+    store_search_results("deezer", results["albums"])
+    store_search_results("itunes", results["tracks"])
+    store_search_results("itunes", results["albums"])
+    store_search_results("ytmusic", results["tracks"])
+    store_search_results("ytmusic", results["albums"])
+
+    return {"results": all_results}
 
 
 def url_search(url: str, settings: dict):
@@ -126,17 +163,21 @@ def url_search(url: str, settings: dict):
             # path_parts looks like ['us', 'track', '3066665361']
             if len(path_parts) >= 3:
                 resource_type = path_parts[1]
-                resource_id = path_parts[2]
+                resource_id = int(path_parts[2])
 
                 with Deezer() as deezer:
                     if resource_type == "track":
-                        track = deezer.get_track(int(resource_id))
+                        track = deezer.get_track(resource_id)
                         if track:
                             results["tracks"].append(track)
+                            # Cache the individual item for tagging
+                            store_search_results("deezer", [track])
                     elif resource_type == "album":
-                        album = deezer.get_album(int(resource_id))
+                        album = deezer.get_album(resource_id)
                         if album:
                             results["albums"].append(album)
+                            # Cache the individual item for tagging
+                            store_search_results("deezer", [album])
 
         # --- YOUTUBE MUSIC ---
         elif "youtube.com" in domain:
@@ -164,18 +205,23 @@ def url_search(url: str, settings: dict):
                         track = yt_music.get_track(resource_id)
                         if track:
                             results["tracks"].append(track)
+                            # Cache the individual item for tagging
+                            store_search_results("ytmusic", [track])
                     elif resource_type == "album":
                         album = yt_music.get_album(resource_id)
                         if album:
                             results["albums"].append(album)
+                            # Cache the individual item for tagging
+                            store_search_results("ytmusic", [album])
         else:
             return {"message": "Unsupported music service URL."}, 400
 
     except Exception:
-        logger.exception(
-            "URL search failed for artist: %s, song: %s",
-            url,
-        )
+        logger.exception("URL search failed for url: %s", url)
         return {"message": "Something went wrong while searching for music!"}, 500
+
+    # Check if we got absolutely nothing
+    if not any(results.values()):
+        return {"message": "No results found or all services failed."}, 404
 
     return {"results": results}
