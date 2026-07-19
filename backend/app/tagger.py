@@ -2,17 +2,17 @@
 The Tagger Module - Handles writing metadata to audio files.
 """
 
+import base64
 from pathlib import Path
 from typing import Optional
 
 import requests
+from app.logger import logger
 from mutagen.flac import FLAC, Picture
 from mutagen.id3 import APIC, COMM, ID3, TALB, TBPM, TDRC, TIT2, TPE1, TPOS, TPUB, TRCK
 from mutagen.mp3 import MP3
 from mutagen.mp4 import MP4, MP4Cover
 from mutagen.oggvorbis import OggVorbis
-
-from app.logger import logger
 
 
 class Metadata:
@@ -101,7 +101,11 @@ def _download_cover(url: str) -> Optional[tuple[bytes, str]]:
         image_data = response.content
 
         # Use the actual Content-Type from the server, or fallback
-        mime_type = content_type if content_type in ["image/jpeg", "image/png", "image/webp"] else "image/jpeg"
+        mime_type = (
+            content_type
+            if content_type in ["image/jpeg", "image/png", "image/webp"]
+            else "image/jpeg"
+        )
 
         logger.info(f"Downloaded cover art: {mime_type} ({len(image_data)} bytes)")
         return image_data, mime_type
@@ -309,7 +313,31 @@ def _tag_ogg(
         audio["bpm"] = str(int(metadata.bpm))
 
     if cover_data:
-        logger.info("Cover art embedding for OGG Vorbis is not yet supported.")
+        # https://mutagen.readthedocs.io/en/latest/user/vcomment.html
+        try:
+            picture = Picture()
+            picture.data = cover_data
+            picture.type = 3  # 3 = Cover (front)
+            picture.desc = "Cover"
+            picture.mime = mime_type
+
+            # Note: width, height, and depth are optional.
+            # Mutagen handles 0 gracefully if we don't know the image dimensions.
+            picture.width = 0
+            picture.height = 0
+            picture.depth = 0
+
+            # Write the picture to binary, then base64 encode it
+            picture_data = picture.write()
+            encoded_data = base64.b64encode(picture_data)
+            vcomment_value = encoded_data.decode("ascii")
+
+            # Assign to the special OGG Vorbis key
+            audio["metadata_block_picture"] = [vcomment_value]
+            logger.info("Successfully embedded cover art in OGG Vorbis file.")
+
+        except Exception as e:
+            logger.warning(f"Failed to embed cover art in OGG Vorbis: {e}")
 
     audio.save()
 
