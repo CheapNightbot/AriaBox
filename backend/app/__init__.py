@@ -1,9 +1,10 @@
 import os
 import secrets
+from pathlib import Path
 
-from flask import Flask
-
+from app.utils import start_temp_cleanup_thread
 from config import Config
+from flask import Flask
 
 
 def create_app(config=Config):
@@ -13,6 +14,9 @@ def create_app(config=Config):
     # Make sure the data directories exists!
     os.makedirs(config.DATA_DIR, exist_ok=True)
     os.makedirs(config.CONFIG_DIR, exist_ok=True)
+
+    # Start the background cleanup thread
+    start_temp_cleanup_thread(Path(config.DATA_DIR, "temp"))
 
     # Make sure secret key was passed, otherwise generate new one
     # No environment variable was provided.
