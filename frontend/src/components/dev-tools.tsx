@@ -82,7 +82,7 @@ export default function DevTools() {
 
     return (
         <Dialog onOpenChange={(e) => { if (e) getCacheStats() }}>
-            <DialogTrigger className="mr-2">
+            <DialogTrigger>
                 <Tooltip delayDuration={500}>
                     <TooltipTrigger asChild>
                         <Button asChild size="icon" variant="ghost" className="p-2">

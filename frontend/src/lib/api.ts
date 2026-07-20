@@ -162,20 +162,54 @@ export async function applyMetadata(
       service: service,
       overwrite: overwrite,
     }),
-  });
+  })
 
   if (!response.ok) {
-    let errorMessage = `Server error: ${response.status}`;
+    let errorMessage = "An unexpected error occurred. Please try again later."
+
     try {
-      const errorData = (await response.json()) as { message?: string };
+      const errorData = (await response.json()) as { message?: string }
       if (errorData.message) {
-        errorMessage = errorData.message;
+        errorMessage = errorData.message
       }
     } catch {
-      // Ignore if not valid JSON
+      // Fallback if the response is not valid JSON (e.g., HTML error page)
+      errorMessage = `Server error (${response.status}). Please try again later.`
     }
-    throw new Error(errorMessage);
+
+    throw new Error(errorMessage)
   }
 
-  return response;
+  return response
+}
+
+export async function convertAudio(
+  file: File,
+  format: string,
+): Promise<Response> {
+  const formData = new FormData()
+  formData.append("file", file)
+  formData.append("format", format)
+
+  const response = await fetch(`${API_BASE_URL}/convert`, {
+    method: "POST",
+    body: formData,
+  })
+
+  if (!response.ok) {
+    let errorMessage = `Server error: ${response.status}`
+
+    try {
+      const errorData = await response.json()
+      if (errorData.message) {
+        errorMessage = errorData.message
+      }
+    } catch {
+      // Fallback if the response is not valid JSON (e.g., HTML error page)
+      errorMessage = "Conversion failed. Please check server configuration or try again later."
+    }
+    throw new Error(errorMessage)
+  }
+
+  return response
 }

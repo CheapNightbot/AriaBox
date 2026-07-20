@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { ArrowLeftIcon, SettingsIcon } from "lucide-react"
+import { ArrowLeftIcon, SettingsIcon, FileMusicIcon } from "lucide-react"
 import { NavLink, useLocation, useNavigate } from "react-router"
 import "./header.css"
 import DevTools from "@/components/dev-tools"
@@ -25,33 +25,49 @@ function Header() {
         </Button>
       )}
 
-      <div className="flex-1">
-        <h1
-          id="header-logo"
-          className="select-none text-3xl font-semibold tracking-wide hover:cursor-pointer animate-in fade-in blur-in-sm duration-500 ease-in-out w-fit mx-auto"
-          onClick={() => (window.location.href = "/")}
-        >
-          AriaBox ⨾<span className="rotate">💿</span>✮˚.⋆
-        </h1>
-      </div>
-
-      {import.meta.env.DEV && <DevTools />}
-
-      <NavLink
-        to="/settings"
-        className={({ isActive }) => (isActive ? "bg-muted rounded-md" : "")}
+      <h1
+        id="header-logo"
+        className="select-none text-3xl font-semibold tracking-wide hover:cursor-pointer animate-in fade-in blur-in-sm duration-500 ease-in-out w-fit mx-auto"
+        onClick={() => (window.location.href = "/")}
       >
-        <Tooltip delayDuration={500}>
-          <TooltipTrigger>
-            <Button asChild size="icon" variant="ghost" className="p-2">
-              <SettingsIcon />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Settings</p>
-          </TooltipContent>
-        </Tooltip>
-      </NavLink>
+        AriaBox ⨾<span className="rotate">💿</span>✮˚.⋆
+      </h1>
+
+      <div className="absolute right-0 flex items-center gap-2">
+        {import.meta.env.DEV && <DevTools />}
+
+        <NavLink
+          to="/convert"
+          className={({ isActive }) => (isActive ? "bg-muted rounded-md" : "")}
+        >
+          <Tooltip delayDuration={500}>
+            <TooltipTrigger>
+              <Button asChild size="icon" variant="ghost" className="p-2">
+                <FileMusicIcon />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Convert Audio</p>
+            </TooltipContent>
+          </Tooltip>
+        </NavLink>
+
+        <NavLink
+          to="/settings"
+          className={({ isActive }) => (isActive ? "bg-muted rounded-md" : "")}
+        >
+          <Tooltip delayDuration={500}>
+            <TooltipTrigger>
+              <Button asChild size="icon" variant="ghost" className="p-2">
+                <SettingsIcon />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Settings</p>
+            </TooltipContent>
+          </Tooltip>
+        </NavLink>
+      </div>
     </header>
   )
 }
