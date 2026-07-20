@@ -11,7 +11,8 @@
                 "dev.containers.dockerCredentialHelper": false,
                 "dev.containers.copyGitConfig": false,
                 "remote.containers.defaultAgentForwarding": false,
-                "remote.SSH.forwardAgent": false
+                "remote.SSH.forwardAgent": false,
+                "python.terminal.activateEnvironment": false
             },
             "extensions": [
                 "bradlc.vscode-tailwindcss",
