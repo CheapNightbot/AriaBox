@@ -22,6 +22,7 @@ services:
       - "8960:8960"     # AriaBox: Prod Server (serves both backend & frontend)
     environment:
       PNPM_HOME: "/home/moe/.local/share/pnpm"
+      UV_LINK_MODE: "copy"
 
 networks:
   devnet:
