@@ -1,20 +1,21 @@
-import { AppleMusicIcon, DeezerIcon, YouTubeMusicIcon } from "@/assets/icons";
-import ApplyMetadataDialog from "@/components/apply-metadata-dialog";
-import EmptyState from "@/components/empty-state";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { AppleMusicIcon, DeezerIcon, YouTubeMusicIcon } from "@/assets/icons"
+import ApplyMetadataDialog from "@/components/apply-metadata-dialog"
+import EmptyState from "@/components/empty-state"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@/components/ui/hover-card"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
   TableBody,
@@ -22,41 +23,41 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { fetchSettings } from "@/lib/api";
-import { formatDuration } from "@/lib/utils";
-import type { Album, Artist, SearchResults, Track } from "@/types";
-import { MoreHorizontalIcon, UserIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
-import { toast } from "sonner";
+} from "@/components/ui/table"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { fetchSettings } from "@/lib/api"
+import { formatDuration } from "@/lib/utils"
+import type { Album, Artist, SearchResults, Track } from "@/types"
+import { CheckCheckIcon, DownloadIcon, MoreHorizontalIcon, UserIcon } from "lucide-react"
+import { useEffect, useState } from "react"
+import { useNavigate } from "react-router"
+import { toast } from "sonner"
 
 export function MusicTable({ musicList }: { musicList: SearchResults }) {
-  const navigate = useNavigate();
-  const [enableDownloads, setEnableDownloads] = useState<boolean>(false);
+  const navigate = useNavigate()
+  const [enableDownloads, setEnableDownloads] = useState<boolean>(false)
 
-  const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
-  const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
+  const [selectedTrack, setSelectedTrack] = useState<Track | null>(null)
+  const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null)
 
   useEffect(() => {
     async function loadSettings() {
       try {
-        const data = await fetchSettings();
-        setEnableDownloads(data.enable_downloads);
+        const data = await fetchSettings()
+        setEnableDownloads(data.enable_downloads)
       } catch (error) {
-        const msg = error instanceof Error ? error.message : "Unknown error";
-        toast.error(`Failed to fetch download settings: ${msg}`);
+        const msg = error instanceof Error ? error.message : "Unknown error"
+        toast.error(`Failed to fetch download settings: ${msg}`)
       }
     }
-    void loadSettings();
-  }, []);
+    void loadSettings()
+  }, [])
 
   const handleDownload = (
     event: React.MouseEvent<HTMLDivElement, MouseEvent>,
   ) => {
     if (!enableDownloads) {
-      event.preventDefault();
+      event.preventDefault()
       toast.info(
         <p>
           The downloading feature is disabled by default! If possible, please
@@ -70,11 +71,11 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
           </span>
           .
         </p>,
-      );
+      )
     } else {
-      toast.warning("Download: NOT IMPLEMENTED YET!");
+      toast.warning("Download: NOT IMPLEMENTED YET!")
     }
-  };
+  }
 
   return (
     <>
@@ -145,7 +146,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                                 <>,&nbsp;</>
                               )}
                             </div>
-                          );
+                          )
                         })}
                       </TableCell>
                       <TableCell className="whitespace-normal wrap-break-word">
@@ -176,25 +177,47 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuLabel className="flex items-center justify-between gap-2">
+                              {track.service_name === "Deezer" ? (
+                                <>
+                                  Deezer
+                                  <DeezerIcon className="text-deezer size-4" />
+                                </>
+                              ) : track.service_name === "iTunes" ? (
+                                <>
+                                  Apple Music
+                                  <AppleMusicIcon className="text-apple-music size-4" />
+                                </>
+                              ) : (
+                                <>
+                                  YouTube Music
+                                  <YouTubeMusicIcon className="text-yt-music size-4" />
+                                </>
+                              )}
+                            </DropdownMenuLabel>
                             <DropdownMenuItem
+                              className="justify-between"
                               onClick={() => {
-                                setSelectedTrack(track);
-                                setSelectedAlbum(null);
+                                setSelectedTrack(track)
+                                setSelectedAlbum(null)
                               }}
                             >
                               Apply Metadata
+                              <CheckCheckIcon />
                             </DropdownMenuItem>
                             <DropdownMenuItem
+                              className="justify-between"
                               disabled={!enableDownloads}
                               onClick={(e) => handleDownload(e)}
                             >
                               Download
+                              <DownloadIcon />
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
                     </TableRow>
-                  );
+                  )
                 })}
               </TableBody>
             </Table>
@@ -255,7 +278,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                                 <>,&nbsp;</>
                               )}
                             </>
-                          );
+                          )
                         })}
                       </TableCell>
                       <TableCell className="whitespace-normal wrap-break-word">
@@ -274,25 +297,47 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuLabel className="flex items-center justify-between gap-2">
+                              {album.service_name === "Deezer" ? (
+                                <>
+                                  Deezer
+                                  <DeezerIcon className="text-deezer size-4" />
+                                </>
+                              ) : album.service_name === "iTunes" ? (
+                                <>
+                                  Apple Music
+                                  <AppleMusicIcon className="text-apple-music size-4" />
+                                </>
+                              ) : (
+                                <>
+                                  YouTube Music
+                                  <YouTubeMusicIcon className="text-yt-music size-4" />
+                                </>
+                              )}
+                            </DropdownMenuLabel>
                             <DropdownMenuItem
+                              className="justify-between"
                               onClick={() => {
-                                setSelectedAlbum(album);
-                                setSelectedTrack(null);
+                                setSelectedAlbum(album)
+                                setSelectedTrack(null)
                               }}
                             >
                               Apply Metadata
+                              <CheckCheckIcon />
                             </DropdownMenuItem>
                             <DropdownMenuItem
+                              className="justify-between"
                               disabled={!enableDownloads}
                               onClick={(e) => handleDownload(e)}
                             >
                               Download
+                              <DownloadIcon />
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
                     </TableRow>
-                  );
+                  )
                 })}
               </TableBody>
             </Table>
@@ -348,15 +393,15 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                         {artist.genres?.length === 0
                           ? "Unknown"
                           : artist.genres?.map((genre, idx) => {
-                              return (
-                                <p key={idx}>
-                                  {genre}
-                                  {idx !== (artist.genres?.length ?? 0) - 1 && (
-                                    <>, </>
-                                  )}
-                                </p>
-                              );
-                            })}
+                            return (
+                              <p key={idx}>
+                                {genre}
+                                {idx !== (artist.genres?.length ?? 0) - 1 && (
+                                  <>, </>
+                                )}
+                              </p>
+                            )
+                          })}
                       </TableCell>
                       <TableCell align="center">
                         {artist.service_name === "Deezer" ? (
@@ -368,7 +413,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                         )}
                       </TableCell>
                     </TableRow>
-                  );
+                  )
                 })}
               </TableBody>
             </Table>
@@ -381,13 +426,13 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
         open={!!selectedTrack || !!selectedAlbum}
         onOpenChange={(isOpen) => {
           if (!isOpen) {
-            setSelectedTrack(null);
-            setSelectedAlbum(null);
+            setSelectedTrack(null)
+            setSelectedAlbum(null)
           }
         }}
       />
     </>
-  );
+  )
 }
 
 function ArtistHoverCard({ artist }: { artist: Artist }) {
@@ -413,5 +458,5 @@ function ArtistHoverCard({ artist }: { artist: Artist }) {
         <p className="text-lg">{artist.name}</p>
       </HoverCardContent>
     </HoverCard>
-  );
+  )
 }
