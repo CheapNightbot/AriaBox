@@ -67,11 +67,35 @@ You can use the interactive launcher script to quickly run AriaBox with or witho
    ./run.sh
    ```
 
-### Using Docker or Podman (Recommended)
+### Using Docker or Podman
 
-The recommended way to run AriaBox is using a container engine. This handles all dependencies (including `ffmpeg`) and builds both the frontend and backend automatically.
+> > Make sure you have Docker or Podman installed.
 
-1. Ensure you have Docker or Podman installed.
+The recommended way to run AriaBox is using a container engine. This handles all dependencies (including `ffmpeg`) and builds both the frontend and backend automatically. You can either pull the pre-built image directly from GitHub Container Registry, or build it locally from the source code.
+
+#### Option A: Using the Pre-built Image (Recommended for most users)
+
+1. First, create a directory wherever you want to store AriaBox's data and configuration. For example, in your home directory:
+   ```bash
+   mkdir ~/AriaBox
+   cd ~/AriaBox
+   ```
+2. Create `compose.yml` file inside this directory. You can either download the [`compose.example.yml`](compose.example.yml) from the project root of this repository and rename it to `compose.yml`, or create a new `compose.yml` file and paste the contents of [`compose.example.yml`](compose.example.yml) into it.
+3. Create `.env` file inside the same directory. Similarly, download the [`.env.example`](.env.example) from the project root and rename it to `.env`, or create a new `.env` file and copy the contents of [`.env.example`](.env.example) into it.
+4. Open the `.env` file and update the values as needed. For example, you can set a custom `SECRET_KEY` or adjust the `DATA_DIR` if necessary.
+5. Run the AriaBox:
+   ```bash
+   docker compose up -d
+   # Or for Podman:
+   podman compose up -d
+   ```
+6. Open your browser and navigate to `http://127.0.0.1:8960` (If you changed `HOST_PORT` variable, change `8960` to that instead).
+
+#### Option B: Building from Source
+
+1. Clone the repository and change directory into the project:
+   ```bash
+   git clone https://github.com/CheapNightbot/AriaBox.git && cd AriaBox
 2. Copy the example environment variable `.env.example` file as `.env` to create your configuration:
    ```bash
    cp .env.example .env
@@ -86,7 +110,7 @@ The recommended way to run AriaBox is using a container engine. This handles all
    # For Podman:
    podman compose up --build -d
    ```
-6. Open your browser and navigate to `http://127.0.0.1:8960`.
+6. Open your browser and navigate to `http://127.0.0.1:8960` (If you changed `HOST_PORT` variable, change `8960` to that instead).
 
 > [!NOTE]
 > **Rootless Docker/Podman Support:** AriaBox fully supports rootless Docker and Podman. If you are using rootless setup, please ensure you have configured the necessary user namespace variables in your `.env` file (as shown in `.env.example`) to resolve permission mapping issues between the host and the container.
