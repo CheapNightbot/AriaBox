@@ -112,23 +112,22 @@ def store_search_results(service: str, items: list):
                 logger.warning(f"Failed to cache {service} item {item.id}: {e}")
 
 
-def clear_expired_cache():
-    """Remove all expired entries from the cache."""
-    now = time.time()
-    expired_keys = [
-        key
-        for key, value in _search_cache.items()
-        if now - value["timestamp"] > ITEM_CACHE_TTL  # Use the longer TTL
-    ]
-    for key in expired_keys:
-        del _search_cache[key]
+def clear_cache():
+    """
+    Completely clear the entire in-memory cache.
+    Useful for development, testing, or forcing a completely fresh start.
+    """
+    global _search_cache
 
-    if expired_keys:
-        msg = f"Successfully cleared {len(expired_keys)} expired entries!"
+    cleared_count = len(_search_cache)
+    _search_cache.clear()
+
+    if cleared_count > 0:
+        msg = f"Successfully cleared {cleared_count} entries from the cache!"
         logger.info(msg)
         return msg
 
-    return "Cache is already clean! No expired entries found."
+    return "Cache was already empty!"
 
 
 def get_cache_stats() -> dict:

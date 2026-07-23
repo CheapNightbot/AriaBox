@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-from app.cache import clear_expired_cache, get_cache_stats
+from app.cache import get_cache_stats, clear_cache as cc
 
 bp = Blueprint("cache", __name__, url_prefix="/api")
 
@@ -13,6 +13,6 @@ def cache_stats():
 
 @bp.route("/cache/clear", methods=["POST"])
 def clear_cache():
-    """Clear all expired cache entries."""
-    msg = clear_expired_cache()
+    """Clear all cache entries."""
+    msg = cc()
     return {"message": msg}

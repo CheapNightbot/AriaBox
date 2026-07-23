@@ -137,7 +137,7 @@ export default function DevTools() {
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent side="left">
-                                    <p>Clear Expired</p>
+                                    <p>Clear</p>
                                 </TooltipContent>
                             </Tooltip>
                         </div>
@@ -165,7 +165,7 @@ export default function DevTools() {
                     }
                 </section>
                 <DialogFooter>
-                    <DialogClose asChild><Button>Close</Button></DialogClose>
+                    <DialogClose asChild><Button variant="outline">Close</Button></DialogClose>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
