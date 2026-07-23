@@ -5,6 +5,8 @@ A full-stack web application to add and update music metadata, convert between a
 > [!NOTE]
 > The downloading feature is disabled by default. If possible, please support artists and purchase the music you love! This feature exists solely to provide a safe, clean alternative to sketchy download sites for hard-to-find audio.
 
+<img width="1920" height="1080" alt="AriaBox" src="https://github.com/user-attachments/assets/8990fb5b-1a18-4499-9893-2fe62caf9a1b" />
+
 ## Key Features
 
 - **Metadata Tagging:** Search across multiple music services and manually apply metadata to your local audio files.
