@@ -72,8 +72,13 @@ You can use the interactive launcher script to quickly run AriaBox with or witho
 The recommended way to run AriaBox is using a container engine. This handles all dependencies (including `ffmpeg`) and builds both the frontend and backend automatically.
 
 1. Ensure you have Docker or Podman installed.
-2. (Optional) Look at the `compose.yml` file and adjust any settings or volume mappings as needed.
-3. Run the application:
+2. Copy the example environment variable `.env.example` file as `.env` to create your configuration:
+   ```bash
+   cp .env.example .env
+   ```
+3. (Optional) Open the newly created `.env` file and adjust any values as needed.
+4. (Optional) Look at the `compose.yml` file and adjust any settings or volume mappings as needed.
+5. Run the application:
    ```bash
    # For Docker:
    docker compose up --build -d
@@ -81,7 +86,7 @@ The recommended way to run AriaBox is using a container engine. This handles all
    # For Podman:
    podman compose up --build -d
    ```
-4. Open your browser and navigate to `http://127.0.0.1:8960`.
+6. Open your browser and navigate to `http://127.0.0.1:8960`.
 
 > [!NOTE]
 > **Rootless Docker/Podman Support:** AriaBox fully supports rootless Docker and Podman. If you are using rootless setup, please ensure you have configured the necessary user namespace variables in your `.env` file (as shown in `.env.example`) to resolve permission mapping issues between the host and the container.
@@ -95,7 +100,12 @@ Running directly involves two steps: building the frontend first, and then runni
 > [!IMPORTANT]
 > **Prerequisite:** You **must** have `ffmpeg` installed and available in your system's PATH. Basic metadata tagging will function without it, but audio conversion and download features require `ffmpeg` to process the files.
 
-1. From the project root directory, install frontend dependencies & build the frontend:
+1. Copy the example environment variable `.env.example` file as `.env` to create your configuration:
+   ```bash
+   cp .env.example .env
+   ```
+2. (Optional) Open the newly created `.env` file and adjust any values as needed.
+3. From the project root directory, install frontend dependencies & build the frontend:
    ```bash
    # Change directory to frontend
    cd frontend
@@ -104,7 +114,7 @@ Running directly involves two steps: building the frontend first, and then runni
    # Build frontend
    pnpm run build
    ```
-2. Again, from the project root directory, start AriaBox:
+4. Again, from the project root directory, start AriaBox:
    ```bash
    # Change directory to backend
    cd backend
@@ -113,6 +123,7 @@ Running directly involves two steps: building the frontend first, and then runni
    # Run AriaBox ~
    uv run ariabox
    ```
+5. Open your browser and navigate to `http://127.0.0.1:8960`.
 
 ## Development
 
@@ -145,7 +156,7 @@ The Vite development server will start on `http://localhost:5173` and automatica
 
 ## Why me built AriaBox
 
-me (secretly? sometime) sing cover songs, but the original song rarely have downloads for instrumental/karaoke version. on top of that, some only provide mp3 file and if you not know/notice, mp3 have this weird "feature" (not bug) where it adds little "padding" (? or really silence) at the beginning and end, which completely breaks timing (but converting to wav or any other format not have that)!!! so, me got so tired of sketchy, ad-filled websites just to download & convert audio and decided to create ArixBox ~
+me (secretly? sometime) sing cover songs, but the original song rarely have downloads for instrumental/karaoke version. on top of that, some only provide mp3 file and if you not know / notice, mp3 have this weird "feature" (not bug) where it adds little "padding" (? or really silence) at the beginning and end, which completely breaks timing (but converting to wav or any other format not have that)!!! so, me got so tired of sketchy, ad-filled websites just to download & convert audio and decided to create ArixBox ~
 
 ## Disclaimer
 
