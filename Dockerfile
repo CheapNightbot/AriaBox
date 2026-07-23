@@ -35,7 +35,9 @@ RUN groupadd --system --gid ${GID} ariabox \
  && useradd --system --gid ${GID} --uid ${UID} --create-home ariabox
 
 # Install build dependencies for ffmpeg
-RUN apt-get update && apt-get install -y \
+# Note: libfdk-aac-dev is in the 'non-free' repository in Debian, so we must enable it first!
+RUN sed -i 's/ main/ main contrib non-free non-free-firmware/g' /etc/apt/sources.list /etc/apt/sources.list.d/*.sources 2>/dev/null || true && \
+    apt-get update && apt-get install -y \
     build-essential \
     pkg-config \
     libx264-dev \

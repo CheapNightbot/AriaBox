@@ -9,7 +9,7 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
-    environment: publish-docker-images
+    environment: publish-docker-image
 
     permissions:
       contents: read
