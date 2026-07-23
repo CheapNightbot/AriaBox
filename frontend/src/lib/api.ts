@@ -213,3 +213,39 @@ export async function convertAudio(
 
   return response
 }
+
+export async function downloadTrack(
+  trackId?: number,
+  albumId?: number,
+  service?: string,
+  format?: string,
+): Promise<Response> {
+  const response = await fetch(`${API_BASE_URL}/download`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      track_id: trackId,
+      album_id: albumId,
+      service: service,
+      format: format,
+    }),
+  })
+
+  if (!response.ok) {
+    let errorMessage = "An unexpected error occurred. Please try again later."
+
+    try {
+      const errorData = (await response.json()) as { message?: string }
+      if (errorData.message) {
+        errorMessage = errorData.message
+      }
+    } catch {
+      // Fallback if the response is not valid JSON (e.g., HTML error page)
+      errorMessage = `Server error (${response.status}). Please try again later.`
+    }
+
+    throw new Error(errorMessage)
+  }
+
+  return response
+}

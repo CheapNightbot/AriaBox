@@ -205,7 +205,7 @@ function ApplyMetadataDialog({
 
         {/* The Metadata Summary Card */}
         <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
-          <Avatar className="w-20 h-20 border rounded">
+          <Avatar className="w-20 h-20 border rounded after:rounded">
             <AvatarImage src={displayCover} className="rounded" />
             <AvatarFallback className="text-2xl rounded">🎵</AvatarFallback>
           </Avatar>

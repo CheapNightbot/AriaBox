@@ -1,9 +1,8 @@
 import json
 import os
 
-from flask import Blueprint, current_app, request
-
 from app.utils import get_current_settings
+from flask import Blueprint, current_app, request
 
 bp = Blueprint("settings", __name__, url_prefix="/api")
 
@@ -39,6 +38,15 @@ def update_settings():
         settings["enable_downloads"] = data["enable_downloads"]
     if "auto_save_to_library" in data:
         settings["auto_save_to_library"] = data["auto_save_to_library"]
+    # Only allow specific, safe formats!
+    if "download_format" in data:
+        valid_formats = {"mp3", "flac", "opus", "ogg", "m4a", "wav"}
+        if data["download_format"] in valid_formats:
+            settings["download_format"] = data["download_format"]
+        else:
+            return {"message": "Invalid download format!"}, 400
+    if "prompt_for_format" in data:
+        settings["prompt_for_format"] = data["prompt_for_format"]
 
     # Save the updated settings back to the file
     os.makedirs(os.path.dirname(settings_file), exist_ok=True)

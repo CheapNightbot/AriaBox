@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { fetchSettings, updateSettings } from "@/lib/api"
+import { cn } from "@/lib/utils"
 import type { AppSettings } from "@/types"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
@@ -151,6 +152,8 @@ const availableLocations = {
   ZW: "Zimbabwe",
 }
 
+const supportedFormats = ["mp3", "flac", "opus", "ogg", "m4a", "wav"] as const
+
 function Settings() {
   const [settings, setSettings] = useState<AppSettings | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -199,11 +202,10 @@ function Settings() {
     try {
       const updatedData = await updateSettings({ enable_downloads: checked })
       setSettings(updatedData)
-
       toast.success(
         checked
           ? "Download feature enabled! Please support artists! (✿ᴗ͈ˬᴗ͈)⁾⁾"
-          : "Download feature disabled.",
+          : "Download feature disabled."
       )
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Unknown error"
@@ -214,12 +216,39 @@ function Settings() {
   const handleAutosaveToggle = async (checked: boolean) => {
     if (!settings) return
     try {
-      const updatedData = await updateSettings({
-        auto_save_to_library: checked,
-      })
+      const updatedData = await updateSettings({ auto_save_to_library: checked })
       setSettings(updatedData)
-
       toast.success(checked ? "Auto-save enabled!" : "Auto-save disabled.")
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Unknown error"
+      toast.error(`Failed to update settings: ${msg}`)
+    }
+  }
+
+  // Handler for Preferred Download Format
+  const handleDownloadFormatChange = async (format: typeof supportedFormats[number]) => {
+    if (!settings) return
+    try {
+      const updatedData = await updateSettings({ download_format: format })
+      setSettings(updatedData)
+      toast.success(`Preferred download format updated to ${format.toUpperCase()}!`)
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Unknown error"
+      toast.error(`Failed to update format: ${msg}`)
+    }
+  }
+
+  // Handler for Prompt for Format
+  const handlePromptFormatChange = async (checked: boolean) => {
+    if (!settings) return
+    try {
+      const updatedData = await updateSettings({ prompt_for_format: checked })
+      setSettings(updatedData)
+      toast.success(
+        checked
+          ? "Will now prompt for format before each download."
+          : "Will now download directly using the preferred format."
+      )
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Unknown error"
       toast.error(`Failed to update settings: ${msg}`)
@@ -232,9 +261,8 @@ function Settings() {
         <h2 className="scroll-m-20 pb-2 text-2xl font-semibold tracking-tight">
           Settings
         </h2>
-
         <p className="text-muted-foreground">
-          Manage your AriaBox preferences, including language, location, and auto-save settings. Note: Downloads are disabled by default to encourage supporting artists!
+          Manage your AriaBox preferences, including language, location, and auto-save settings. Downloads are disabled by default to encourage supporting artists!
         </p>
       </header>
       <ScrollArea className="border h-[clamp(600px,70vh,800px)] w-[clamp(600px,90vw,1200px)] rounded-sm relative overflow-clip">
@@ -251,7 +279,7 @@ function Settings() {
             </p>
           </div>
         ) : (
-          <div className="flex flex-col gap-6 items-center animate-in zoom-in-95 fade-in ease-in-out duration-500 pt-8">
+          <div className="flex flex-col gap-6 items-center animate-in zoom-in-95 fade-in ease-in-out duration-500 pt-8 pb-12">
             <FieldSet className="w-[clamp(600px,60vw,800px)]">
               <FieldDescription>
                 Following settings affect the response language and location. Note
@@ -262,22 +290,18 @@ function Settings() {
                   <Label htmlFor="language">Language</Label>
                   <Select
                     value={settings.language}
-                    onValueChange={(value: string) =>
-                      void handleLanguageChange(value)
-                    }
+                    onValueChange={(value: string) => void handleLanguageChange(value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Language to return results in..." />
                     </SelectTrigger>
                     <SelectContent position="popper">
                       <SelectGroup>
-                        {Object.entries(availableLanguages).map(
-                          ([key, value]) => (
-                            <SelectItem key={key} value={key}>
-                              {value}
-                            </SelectItem>
-                          ),
-                        )}
+                        {Object.entries(availableLanguages).map(([key, value]) => (
+                          <SelectItem key={key} value={key}>
+                            {value}
+                          </SelectItem>
+                        ))}
                       </SelectGroup>
                     </SelectContent>
                   </Select>
@@ -287,22 +311,18 @@ function Settings() {
                   <Label htmlFor="location">Location</Label>
                   <Select
                     value={settings.location}
-                    onValueChange={(value: string) =>
-                      void handleLocationChange(value)
-                    }
+                    onValueChange={(value: string) => void handleLocationChange(value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Location to use to fetch results from..." />
                     </SelectTrigger>
                     <SelectContent position="popper">
                       <SelectGroup>
-                        {Object.entries(availableLocations).map(
-                          ([key, value]) => (
-                            <SelectItem key={key} value={key}>
-                              {value}
-                            </SelectItem>
-                          ),
-                        )}
+                        {Object.entries(availableLocations).map(([key, value]) => (
+                          <SelectItem key={key} value={key}>
+                            {value}
+                          </SelectItem>
+                        ))}
                       </SelectGroup>
                     </SelectContent>
                   </Select>
@@ -317,25 +337,6 @@ function Settings() {
                 <Field>
                   <div className="flex items-center justify-between gap-2">
                     <div className="space-y-0.5">
-                      <Label htmlFor="enable-downloads">Enable Downloads</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Allow downloading songs. Please respect copyright and
-                        support artists!
-                      </p>
-                    </div>
-                    <Switch
-                      id="enable-downloads"
-                      checked={settings.enable_downloads}
-                      onCheckedChange={(value) =>
-                        void handleDownloadToggle(value)
-                      }
-                    />
-                  </div>
-                </Field>
-
-                <Field>
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="space-y-0.5">
                       <Label htmlFor="auto-save">Auto-save to Library</Label>
                       <p className="text-sm text-muted-foreground">
                         Save tagged/downloaded files directly to your music
@@ -345,17 +346,77 @@ function Settings() {
                     <Switch
                       id="auto-save"
                       checked={settings.auto_save_to_library}
-                      onCheckedChange={(value) =>
-                        void handleAutosaveToggle(value)
-                      }
+                      onCheckedChange={(value) => void handleAutosaveToggle(value)}
                     />
                   </div>
                 </Field>
+
+                <Field>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="enable-downloads">Enable Downloads</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Allow downloading songs. Please respect copyright and
+                        support artists!
+                      </p>
+                    </div>
+                    <Switch
+                      id="enable-downloads"
+                      checked={settings.enable_downloads}
+                      onCheckedChange={(value) => void handleDownloadToggle(value)}
+                    />
+                  </div>
+                </Field>
+
+                {settings.enable_downloads && (
+                  <>
+                    <Field className="animate-in zoom-in-95 fade-in duration-500 ease-in-out">
+                      <div className="space-y-0.5 mb-2">
+                        <Label>Preferred Download Format</Label>
+                        <p className="text-sm text-muted-foreground">
+                          The default audio format to use when downloading tracks.
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {supportedFormats.map((fmt) => (
+                          <button
+                            key={fmt}
+                            onClick={() => void handleDownloadFormatChange(fmt)}
+                            className={cn(
+                              "px-4 py-1.5 rounded-full text-xs font-semibold transition-all border animate-in zoom-in-95 fade-in duration-500 ease-in-out",
+                              settings.download_format === fmt
+                                ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                                : "bg-background text-muted-foreground border-muted hover:border-primary/50"
+                            )}
+                          >
+                            {fmt.toUpperCase()}
+                          </button>
+                        ))}
+                      </div>
+                    </Field>
+
+                    <Field className="animate-in zoom-in-95 fade-in duration-500 ease-in-out">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="prompt-format">Prompt for Format</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Show a dialog to choose the format before each download, instead of using the default.
+                          </p>
+                        </div>
+                        <Switch
+                          id="prompt-format"
+                          checked={settings.prompt_for_format}
+                          onCheckedChange={(value) => void handlePromptFormatChange(value)}
+                        />
+                      </div>
+                    </Field>
+                  </>
+                )}
               </FieldGroup>
             </FieldSet>
           </div>
         )}
-        <p className="text-xs text-muted-foreground/70 mt-4 p-2 bg-muted text-center absolute w-full bottom-0 animate-in fade-in duration-700 slide-in-from-bottom-80 ease-in-out">
+        <p className="text-xs text-muted-foreground/70 mt-4 p-2 bg-muted text-center absolute w-full bottom-0 animate-in fade-in duration-700 slide-in-from-bottom-80 ease-in-out z-1">
           Note: Server-level configurations are managed via environment variables. Please update them accordingly.
         </p>
       </ScrollArea>

@@ -47,11 +47,22 @@ def create_app(config=Config):
             )
 
     # Register blueprints
-    from .routes import cache, convert, delete, frontend, search, settings, tag, upload
+    from .routes import (
+        cache,
+        convert,
+        delete,
+        download,
+        frontend,
+        search,
+        settings,
+        tag,
+        upload,
+    )
 
     app.register_blueprint(cache.bp)
     app.register_blueprint(convert.bp)
     app.register_blueprint(delete.bp)
+    app.register_blueprint(download.bp)
     app.register_blueprint(search.bp)
     app.register_blueprint(settings.bp)
     app.register_blueprint(tag.bp)

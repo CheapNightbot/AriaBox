@@ -1,54 +1,20 @@
-import os
-import re
 from pathlib import Path
 from types import SimpleNamespace
-
-from flask import Blueprint, current_app, request, send_file
-from yutipy.deezer import Deezer
-from yutipy.musicyt import MusicYT
 
 from app.cache import get_cached_result
 from app.logger import logger
 from app.tagger import Metadata, tag_audio_file
-from app.utils import get_current_settings
+from app.utils import (
+    generate_filename,
+    get_current_settings,
+    get_organized_library_path,
+    sanitize_filename,
+)
+from flask import Blueprint, current_app, request, send_file
+from yutipy.deezer import Deezer
+from yutipy.musicyt import MusicYT
 
 bp = Blueprint("tag", __name__, url_prefix="/api")
-
-
-def sanitize_filename(filename: str) -> str:
-    """
-    Sanitizes a filename for modern filesystems.
-    Keeps UTF-8 characters (like Japanese) and spaces, but removes
-    illegal characters like / \\ : * ? " < > |
-    """
-    # Remove invalid filesystem characters
-    sanitized = re.sub(r'[\\/:*?"<>|]', "", filename)
-    # Remove leading/trailing spaces and dots
-    sanitized = sanitized.strip(" .")
-
-    # Limit length to 200 characters (filesystem limit is usually 255)
-    if len(sanitized) > 200:
-        name, ext = os.path.splitext(sanitized)
-        sanitized = name[:200] + ext
-
-    return sanitized if sanitized else "Unknown"
-
-
-def generate_filename(metadata: Metadata, file_ext: str) -> str:
-    """Safely generate a filename from metadata."""
-    # Get artist name safely
-    artist = "Unknown Artist"
-    if metadata.artists and len(metadata.artists) > 0:
-        # Take the first non-empty artist name
-        for name in metadata.artists:
-            if name and name.strip():
-                artist = name.strip()
-                break
-
-    # Get title safely
-    title = metadata.title or "Unknown Title"
-
-    return f"{artist} - {title}.{file_ext}"
 
 
 @bp.route("/tag", methods=["POST"])
@@ -202,30 +168,14 @@ def tag_file():
     auto_save = settings.get("auto_save_to_library", False)
 
     if auto_save:
-        # Move file to DATA_DIR/music/
-        music_dir = base_path / "music"
-        music_dir.mkdir(exist_ok=True)
+        final_path = get_organized_library_path(str(base_path), metadata, file_ext)
 
-        # Generate a safe filename using the helper function
-        raw_filename = generate_filename(metadata, file_ext)
-        safe_filename = sanitize_filename(raw_filename)
-        final_path = music_dir / safe_filename
-
-        # Handle duplicate filenames
-        counter = 1
-        while final_path.exists():
-            raw_filename = generate_filename(metadata, file_ext)
-            raw_filename = raw_filename.replace(
-                f".{file_ext}", f" ({counter}).{file_ext}"
-            )
-            safe_filename = sanitize_filename(raw_filename)
-            final_path = music_dir / safe_filename
-            counter += 1
+        # Create the nested directories if they don't exist
+        final_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Move the file
         file_path.rename(final_path)
-
-        logger.info(f"File saved to library: {final_path}")
+        logger.info(f"File saved to organized library: {final_path}")
 
         return {
             "message": "Metadata applied and saved to library!",

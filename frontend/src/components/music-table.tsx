@@ -1,5 +1,6 @@
 import { AppleMusicIcon, DeezerIcon, YouTubeMusicIcon } from "@/assets/icons"
 import ApplyMetadataDialog from "@/components/apply-metadata-dialog"
+import DownloadDialog from "@/components/download-dialog"
 import EmptyState from "@/components/empty-state"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -30,21 +31,28 @@ import { formatDuration } from "@/lib/utils"
 import type { Album, Artist, SearchResults, Track } from "@/types"
 import { CheckCheckIcon, DownloadIcon, MoreHorizontalIcon, UserIcon } from "lucide-react"
 import { useEffect, useState } from "react"
-import { useNavigate } from "react-router"
 import { toast } from "sonner"
 
 export function MusicTable({ musicList }: { musicList: SearchResults }) {
-  const navigate = useNavigate()
+  // Settings state
   const [enableDownloads, setEnableDownloads] = useState<boolean>(false)
+  const [promptForFormat, setPromptForFormat] = useState<boolean>(true)
+  const [downloadFormat, setDownloadFormat] = useState<string>("mp3")
 
+  // Dialog state
+  const [isFormatDialogOpen, setIsFormatDialogOpen] = useState(false)
   const [selectedTrack, setSelectedTrack] = useState<Track | null>(null)
   const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null)
+  const [pendingDownloadTrack, setPendingDownloadTrack] = useState<Track | null>(null)
+  const [pendingDownloadAlbum, setPendingDownloadAlbum] = useState<Album | null>(null)
 
   useEffect(() => {
     async function loadSettings() {
       try {
         const data = await fetchSettings()
         setEnableDownloads(data.enable_downloads)
+        setPromptForFormat(data.prompt_for_format ?? true)
+        setDownloadFormat(data.download_format ?? "mp3")
       } catch (error) {
         const msg = error instanceof Error ? error.message : "Unknown error"
         toast.error(`Failed to fetch download settings: ${msg}`)
@@ -52,30 +60,6 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
     }
     void loadSettings()
   }, [])
-
-  const handleDownload = (
-    event: React.MouseEvent<HTMLDivElement, MouseEvent>,
-  ) => {
-    if (!enableDownloads) {
-      event.preventDefault()
-      toast.info(
-        <p>
-          The downloading feature is disabled by default! If possible, please
-          support artists and purchase the music you love! You can enable this
-          feature in{" "}
-          <span
-            className="underline hover:cursor-pointer hover:text-accent"
-            onClick={() => void navigate("/settings")}
-          >
-            Settings
-          </span>
-          .
-        </p>,
-      )
-    } else {
-      toast.warning("Download: NOT IMPLEMENTED YET!")
-    }
-  }
 
   return (
     <>
@@ -95,21 +79,11 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-center font-semibold"></TableHead>
-                  <TableHead className="text-center font-semibold">
-                    Title
-                  </TableHead>
-                  <TableHead className="text-center font-semibold">
-                    Artists
-                  </TableHead>
-                  <TableHead className="text-center font-semibold">
-                    Album
-                  </TableHead>
-                  <TableHead className="text-center font-semibold">
-                    Duration
-                  </TableHead>
-                  <TableHead className="text-center font-semibold">
-                    🎀
-                  </TableHead>
+                  <TableHead className="text-center font-semibold">Title</TableHead>
+                  <TableHead className="text-center font-semibold">Artists</TableHead>
+                  <TableHead className="text-center font-semibold">Album</TableHead>
+                  <TableHead className="text-center font-semibold">Duration</TableHead>
+                  <TableHead className="text-center font-semibold">🎀</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -118,10 +92,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                     <TableRow key={track.id} className="text-center">
                       <TableCell className="w-25 pl-4">
                         <Avatar className="size-20 after:rounded">
-                          <AvatarImage
-                            className="rounded"
-                            src={track.album?.cover}
-                          />
+                          <AvatarImage className="rounded" src={track.album?.cover} />
                           <AvatarFallback className="rounded overflow-clip">
                             <Skeleton className="size-full" />
                           </AvatarFallback>
@@ -142,21 +113,14 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                           return (
                             <div key={artist.id} className="contents">
                               <ArtistHoverCard artist={artist} />
-                              {idx !== (track.artists?.length ?? 0) - 1 && (
-                                <>,&nbsp;</>
-                              )}
+                              {idx !== (track.artists?.length ?? 0) - 1 && <>,&nbsp;</>}
                             </div>
                           )
                         })}
                       </TableCell>
                       <TableCell className="whitespace-normal wrap-break-word">
                         {track.album?.url ? (
-                          <a
-                            href={track.album?.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:underline"
-                          >
+                          <a href={track.album?.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
                             {track.album?.title}
                           </a>
                         ) : (
@@ -167,11 +131,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-8"
-                            >
+                            <Button variant="ghost" size="icon" className="size-8">
                               <MoreHorizontalIcon />
                               <span className="sr-only">Open menu</span>
                             </Button>
@@ -179,20 +139,11 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel className="flex items-center justify-between gap-2">
                               {track.service_name === "Deezer" ? (
-                                <>
-                                  Deezer
-                                  <DeezerIcon className="text-deezer size-4" />
-                                </>
+                                <>Deezer <DeezerIcon className="text-deezer size-4" /></>
                               ) : track.service_name === "iTunes" ? (
-                                <>
-                                  Apple Music
-                                  <AppleMusicIcon className="text-apple-music size-4" />
-                                </>
+                                <>Apple Music <AppleMusicIcon className="text-apple-music size-4" /></>
                               ) : (
-                                <>
-                                  YouTube Music
-                                  <YouTubeMusicIcon className="text-yt-music size-4" />
-                                </>
+                                <>YouTube Music <YouTubeMusicIcon className="text-yt-music size-4" /></>
                               )}
                             </DropdownMenuLabel>
                             <DropdownMenuItem
@@ -208,7 +159,11 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                             <DropdownMenuItem
                               className="justify-between"
                               disabled={!enableDownloads}
-                              onClick={(e) => handleDownload(e)}
+                              onClick={() => {
+                                setPendingDownloadTrack(track)
+                                setPendingDownloadAlbum(null)
+                                setIsFormatDialogOpen(true)
+                              }}
                             >
                               Download
                               <DownloadIcon />
@@ -233,18 +188,10 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-center font-semibold"></TableHead>
-                  <TableHead className="text-center font-semibold">
-                    Title
-                  </TableHead>
-                  <TableHead className="text-center font-semibold">
-                    Artists
-                  </TableHead>
-                  <TableHead className="text-center font-semibold">
-                    Tracks
-                  </TableHead>
-                  <TableHead className="text-center font-semibold">
-                    🎀
-                  </TableHead>
+                  <TableHead className="text-center font-semibold">Title</TableHead>
+                  <TableHead className="text-center font-semibold">Artists</TableHead>
+                  <TableHead className="text-center font-semibold">Tracks</TableHead>
+                  <TableHead className="text-center font-semibold">🎀</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -260,12 +207,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                         </Avatar>
                       </TableCell>
                       <TableCell className="whitespace-normal wrap-break-word">
-                        <a
-                          href={album.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:underline"
-                        >
+                        <a href={album.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
                           {album.title}
                         </a>
                       </TableCell>
@@ -274,9 +216,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                           return (
                             <>
                               <ArtistHoverCard artist={artist} />
-                              {idx !== (album.artists?.length ?? 0) - 1 && (
-                                <>,&nbsp;</>
-                              )}
+                              {idx !== (album.artists?.length ?? 0) - 1 && <>,&nbsp;</>}
                             </>
                           )
                         })}
@@ -287,11 +227,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-8"
-                            >
+                            <Button variant="ghost" size="icon" className="size-8">
                               <MoreHorizontalIcon />
                               <span className="sr-only">Open menu</span>
                             </Button>
@@ -299,20 +235,11 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel className="flex items-center justify-between gap-2">
                               {album.service_name === "Deezer" ? (
-                                <>
-                                  Deezer
-                                  <DeezerIcon className="text-deezer size-4" />
-                                </>
+                                <>Deezer <DeezerIcon className="text-deezer size-4" /></>
                               ) : album.service_name === "iTunes" ? (
-                                <>
-                                  Apple Music
-                                  <AppleMusicIcon className="text-apple-music size-4" />
-                                </>
+                                <>Apple Music <AppleMusicIcon className="text-apple-music size-4" /></>
                               ) : (
-                                <>
-                                  YouTube Music
-                                  <YouTubeMusicIcon className="text-yt-music size-4" />
-                                </>
+                                <>YouTube Music <YouTubeMusicIcon className="text-yt-music size-4" /></>
                               )}
                             </DropdownMenuLabel>
                             <DropdownMenuItem
@@ -328,7 +255,11 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                             <DropdownMenuItem
                               className="justify-between"
                               disabled={!enableDownloads}
-                              onClick={(e) => handleDownload(e)}
+                              onClick={() => {
+                                setPendingDownloadAlbum(album)
+                                setPendingDownloadTrack(null)
+                                setIsFormatDialogOpen(true)
+                              }}
                             >
                               Download
                               <DownloadIcon />
@@ -353,15 +284,9 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-center font-semibold"></TableHead>
-                  <TableHead className="text-center font-semibold">
-                    Name
-                  </TableHead>
-                  <TableHead className="text-center font-semibold">
-                    Genres
-                  </TableHead>
-                  <TableHead className="text-center font-semibold">
-                    🎀
-                  </TableHead>
+                  <TableHead className="text-center font-semibold">Name</TableHead>
+                  <TableHead className="text-center font-semibold">Genres</TableHead>
+                  <TableHead className="text-center font-semibold">🎀</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -370,22 +295,14 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                     <TableRow key={artist.id} className="text-center">
                       <TableCell className="w-25 pl-4">
                         <Avatar className="size-20 after:rounded">
-                          <AvatarImage
-                            className="rounded"
-                            src={artist.picture}
-                          />
+                          <AvatarImage className="rounded" src={artist.picture} />
                           <AvatarFallback className="rounded overflow-clip">
                             <UserIcon />
                           </AvatarFallback>
                         </Avatar>
                       </TableCell>
                       <TableCell className="whitespace-normal wrap-break-word">
-                        <a
-                          href={artist.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:underline"
-                        >
+                        <a href={artist.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
                           {artist.name}
                         </a>
                       </TableCell>
@@ -396,9 +313,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
                             return (
                               <p key={idx}>
                                 {genre}
-                                {idx !== (artist.genres?.length ?? 0) - 1 && (
-                                  <>, </>
-                                )}
+                                {idx !== (artist.genres?.length ?? 0) - 1 && <>, </>}
                               </p>
                             )
                           })}
@@ -420,6 +335,7 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
           )}
         </TabsContent>
       </Tabs>
+
       <ApplyMetadataDialog
         track={selectedTrack}
         album={selectedAlbum}
@@ -430,6 +346,21 @@ export function MusicTable({ musicList }: { musicList: SearchResults }) {
             setSelectedAlbum(null)
           }
         }}
+      />
+
+      <DownloadDialog
+        track={pendingDownloadTrack}
+        album={pendingDownloadAlbum}
+        open={isFormatDialogOpen}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setIsFormatDialogOpen(false)
+            setPendingDownloadTrack(null)
+            setPendingDownloadAlbum(null)
+          }
+        }}
+        promptForFormat={promptForFormat}
+        defaultFormat={downloadFormat}
       />
     </>
   )

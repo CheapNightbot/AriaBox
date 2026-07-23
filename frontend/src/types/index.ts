@@ -65,6 +65,8 @@ export interface AppSettings {
   location: string;
   enable_downloads: boolean;
   auto_save_to_library: boolean;
+  download_format: "mp3" | "flac" | "opus" | "ogg" | "m4a" | "wav";
+  prompt_for_format: boolean;
 }
 
 export interface UploadResponse {

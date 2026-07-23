@@ -1,13 +1,13 @@
-import { Button } from "@/components/ui/button"
-import { ArrowLeftIcon, SettingsIcon, FileMusicIcon } from "lucide-react"
-import { NavLink, useLocation, useNavigate } from "react-router"
-import "./header.css"
 import DevTools from "@/components/dev-tools"
+import { Button } from "@/components/ui/button"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import "@/styles/header.css"
+import { ArrowLeftIcon, FileMusicIcon, SettingsIcon } from "lucide-react"
+import { NavLink, useLocation, useNavigate } from "react-router"
 
 function Header() {
   const location = useLocation()

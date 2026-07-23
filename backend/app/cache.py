@@ -130,6 +130,7 @@ def clear_expired_cache():
 
     return "Cache is already clean! No expired entries found."
 
+
 def get_cache_stats() -> dict:
     """Get cache statistics (useful for debugging)."""
     search_count = sum(1 for k in _search_cache if k.startswith("search:"))
@@ -141,3 +142,36 @@ def get_cache_stats() -> dict:
         "individual_items": item_count,
         "memory_estimate_kb": len(str(_search_cache)) // 1024,
     }
+
+
+def get_cached_tracks_for_album(service: str, album_id: str | int) -> list:
+    """
+    Scan the cache for all tracks that belong to the given album_id.
+    """
+    matching_tracks = []
+    prefix = f"item:{service}:"
+    target_album_id_str = str(album_id)
+
+    for key, cached in _search_cache.items():
+        if key.startswith(prefix):
+            data = cached.get("data")
+            if not data:
+                continue
+
+            # Check if this item is a track and belongs to the target album
+            album_info = data.get("album")
+            if (
+                isinstance(album_info, dict)
+                and str(album_info.get("id")) == target_album_id_str
+            ):
+                matching_tracks.append(data)
+
+    # Sort by track_number if available to keep album order
+    matching_tracks.sort(key=lambda x: x.get("track_number") or 696)
+
+    if matching_tracks:
+        logger.info(
+            f"Found {len(matching_tracks)} cached tracks for {service} album {album_id}"
+        )
+
+    return matching_tracks
