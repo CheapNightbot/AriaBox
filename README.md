@@ -100,12 +100,16 @@ Running directly involves two steps: building the frontend first, and then runni
 > [!IMPORTANT]
 > **Prerequisite:** You **must** have `ffmpeg` installed and available in your system's PATH. Basic metadata tagging will function without it, but audio conversion and download features require `ffmpeg` to process the files.
 
-1. Copy the example environment variable `.env.example` file as `.env` to create your configuration:
+1. Clone the repository and change directory into the project:
+   ```bash
+   git clone https://github.com/CheapNightbot/AriaBox.git && cd AriaBox
+   ```
+2. Copy the example environment variable `.env.example` file as `.env` to create your configuration:
    ```bash
    cp .env.example .env
    ```
-2. (Optional) Open the newly created `.env` file and adjust any values as needed.
-3. From the project root directory, install frontend dependencies & build the frontend:
+3. (Optional) Open the newly created `.env` file and adjust any values as needed.
+4. From the project root directory, install frontend dependencies & build the frontend:
    ```bash
    # Change directory to frontend
    cd frontend
@@ -114,7 +118,7 @@ Running directly involves two steps: building the frontend first, and then runni
    # Build frontend
    pnpm run build
    ```
-4. Again, from the project root directory, start AriaBox:
+5. Again, from the project root directory, start AriaBox:
    ```bash
    # Change directory to backend
    cd backend
@@ -123,7 +127,7 @@ Running directly involves two steps: building the frontend first, and then runni
    # Run AriaBox ~
    uv run ariabox
    ```
-5. Open your browser and navigate to `http://127.0.0.1:8960`.
+6. Open your browser and navigate to `http://127.0.0.1:8960`.
 
 ## Development
 
