@@ -15,6 +15,7 @@ from app.utils import (
     sanitize_filename,
 )
 from flask import Blueprint, current_app, request, send_file
+from markupsafe import escape
 from yt_dlp import YoutubeDL
 from yt_dlp.networking.impersonate import ImpersonateTarget
 from yt_dlp.utils import DownloadError
@@ -71,7 +72,7 @@ def download_audio():
     }
     normalized_service = service_map.get(service.lower() if service else "")
     if not normalized_service:
-        return {"message": f"Unsupported service: {service}"}, 400
+        return {"message": f"Unsupported service: {escape(service)}"}, 400
 
     metadata = None
     tracks_to_download = []

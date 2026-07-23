@@ -11,6 +11,7 @@ from app.utils import (
     sanitize_filename,
 )
 from flask import Blueprint, current_app, request, send_file
+from markupsafe import escape
 from yutipy.deezer import Deezer
 from yutipy.musicyt import MusicYT
 
@@ -58,7 +59,7 @@ def tag_file():
     normalized_service = service_map.get(service.lower() if service else "")
 
     if not normalized_service:
-        return {"message": f"Unsupported service: {service}"}, 400
+        return {"message": f"Unsupported service: {escape(service)}"}, 400
 
     # Build file path safely
     data_dir = current_app.config.get("DATA_DIR")
