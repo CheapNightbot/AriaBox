@@ -63,8 +63,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG_NAME: ${{ github.ref_name }}
         run: |
-          # Find the previous tag, or use the very first commit if this is the first release
-          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)
+          # Find the previous tag.
+          PREV_TAG=$(git describe --tags --abbrev=0 ${GITHUB_REF_NAME}^ 2>/dev/null || git rev-list --max-parents=0 HEAD)
 
           # Get commit messages and author names, excluding merge commits
           COMMITS=$(git log --pretty=format:"%s||%an" --no-merges ${PREV_TAG}..HEAD)
