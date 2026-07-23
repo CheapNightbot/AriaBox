@@ -20,7 +20,7 @@ If you prefer to develop on your host machine, you must first install the core t
 - **Node.js** & **pnpm** (for frontend development)
 - **ffmpeg** (required for audio processing and format conversion)
 
-Once installed, follow the "Development" section in the [README.md](./README.md) to spin up the backend and frontend servers.
+Once installed, follow the "Development" section in the [README.md](./README.md#development) to spin up the backend and frontend servers.
 
 ## 💬 Commit Messages & Release Notes
 
