@@ -69,7 +69,7 @@ You can use the interactive launcher script to quickly run AriaBox with or witho
 
 ### Using Docker or Podman
 
-> > Make sure you have Docker or Podman installed.
+> Make sure you have Docker or Podman installed.
 
 The recommended way to run AriaBox is using a container engine. This handles all dependencies (including `ffmpeg`) and builds both the frontend and backend automatically. You can either pull the pre-built image directly from GitHub Container Registry, or build it locally from the source code.
 
