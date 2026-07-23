@@ -59,7 +59,8 @@ def create_app(config=Config):
         upload,
     )
 
-    app.register_blueprint(cache.bp)
+    if app.debug:
+        app.register_blueprint(cache.bp)
     app.register_blueprint(convert.bp)
     app.register_blueprint(delete.bp)
     app.register_blueprint(download.bp)
