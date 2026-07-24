@@ -14,6 +14,11 @@ A full-stack web application to add and update music metadata, convert between a
 - **Audio Conversion:** A dedicated, separate feature to convert your audio files between different audio formats.
 - **Multi-Service Search:** Fetch rich metadata seamlessly from Deezer, YouTube Music, and iTunes/Apple Music.
 
+<details>
+   <summary>How tagging work?</summary>
+   <img width="3104" height="3130" alt="AriaBox Tagging Flow" src="https://github.com/user-attachments/assets/2b21c642-6603-44fe-be56-6cb919d30f3f" />
+</details>
+
 ## Tech Stack
 
 - **Frontend:** React, Vite, TypeScript, Tailwind CSS, shadcn/ui
