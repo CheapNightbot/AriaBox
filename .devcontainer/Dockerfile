@@ -1,11 +1,10 @@
 FROM python:3.14.6-trixie
 
-# Install ffmpeg (used for audio conversion)
-RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/*
-
-# Create normal (non-root) user
+# Create normal (non-root) user & install ffmpeg (used for audio conversion)
 RUN groupadd -g 1000 moe \
-    && useradd -u 1000 -g moe -m -s /bin/bash moe
+    && useradd -u 1000 -g moe -m -s /bin/bash moe \
+    && apt-get update && apt-get install -y --no-install-recommends ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
 
 # Explicitly set HOME and NVM_DIR to prevent Docker path confusion!
 ENV HOME=/home/moe

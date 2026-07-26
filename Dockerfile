@@ -29,41 +29,12 @@ FROM ghcr.io/astral-sh/uv:python3.14-trixie-slim
 ARG UID=1000
 ARG GID=1000
 
-# Setup a non-root user!
+# Setup a non-root user & install ffmpeg (used for audio conversion)
 # We use the ${UID} and ${GID} variables so it matches host machine!
 RUN groupadd --system --gid ${GID} ariabox \
- && useradd --system --gid ${GID} --uid ${UID} --create-home ariabox
-
-# Install build dependencies for ffmpeg
-# Note: libfdk-aac-dev is in the 'non-free' repository in Debian, so we must enable it first!
-RUN sed -i 's/ main/ main contrib non-free non-free-firmware/g' /etc/apt/sources.list /etc/apt/sources.list.d/*.sources 2>/dev/null || true && \
-    apt-get update && apt-get install -y \
-    build-essential \
-    pkg-config \
-    libx264-dev \
-    libx265-dev \
-    libvpx-dev \
-    libfdk-aac-dev \
-    libmp3lame-dev \
-    libopus-dev \
-    yasm \
-    nasm \
-    wget \
-    xz-utils \
-    && rm -rf /var/lib/apt/lists/*
-
-# Download and compile latest ffmpeg (8.1.2) from source
-WORKDIR /tmp
-RUN wget https://ffmpeg.org/releases/ffmpeg-8.1.2.tar.xz && \
-    tar xJf ffmpeg-8.1.2.tar.xz && \
-    cd ffmpeg-8.1.2 && \
-    ./configure --enable-gpl --enable-libmp3lame --enable-libopus \
-                --enable-libvpx --enable-libx264 --enable-libx265 \
-                --enable-nonfree --enable-libfdk-aac && \
-    make -j$(nproc) && \
-    make install && \
-    cd / && \
-    rm -rf /tmp/ffmpeg-*
+ && useradd --system --gid ${GID} --uid ${UID} --create-home ariabox \
+ && apt-get update && apt-get install -y --no-install-recommends ffmpeg \
+ && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
