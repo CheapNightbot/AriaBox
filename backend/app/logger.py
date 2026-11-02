@@ -1,11 +1,16 @@
 import logging
 import sys
+from flask import current_app
 
 logger = logging.getLogger("ariabox")
 logger.setLevel(logging.INFO)
 
 handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.INFO)
+
+if current_app.debug:
+    handler.setLevel(logging.INFO)
+else:
+    handler.setLevel(logging.WARNING)
 
 formatter = logging.Formatter(
     "[%(asctime)s] %(levelname)s in %(module)s: %(message)s",
