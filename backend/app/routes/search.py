@@ -52,6 +52,7 @@ def named_search(artist: str, song: str, settings: dict):
         artist or "",
         song or "",
         settings.get("location", "US"),
+        settings.get("language", "en"),
     )
 
     if cached_results:
@@ -132,6 +133,7 @@ def named_search(artist: str, song: str, settings: dict):
         artist or "",
         song or "",
         settings.get("location", "US"),
+        settings.get("language", "en"),
         all_results,
     )
 
