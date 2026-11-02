@@ -1,13 +1,13 @@
 import logging
+import os
 import sys
-from flask import current_app
 
 logger = logging.getLogger("ariabox")
 logger.setLevel(logging.INFO)
 
 handler = logging.StreamHandler(sys.stdout)
 
-if current_app.debug:
+if os.environ.get("FLASK_DEBUG", "0") in ("1", "true", "True"):
     handler.setLevel(logging.INFO)
 else:
     handler.setLevel(logging.WARNING)
