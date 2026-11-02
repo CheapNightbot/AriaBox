@@ -22,18 +22,28 @@ SEARCH_CACHE_TTL = 1800  # 30 minutes
 ITEM_CACHE_TTL = 3600  # 1 hour
 
 
-def _hash_query(artist: str, song: str, location: str) -> str:
+def _hash_query(
+    artist: str,
+    song: str,
+    location: str,
+    language: str,
+) -> str:
     """Create a unique hash for a search query."""
-    query = f"{artist}:{song}:{location}"
-    return hashlib.md5(query.encode()).hexdigest()
+    query = f"{artist}:{song}:{location}-{language}"
+    return hashlib.sha512(query.encode()).hexdigest()
 
 
-def get_cached_search(artist: str, song: str, location: str) -> Optional[dict]:
+def get_cached_search(
+    artist: str,
+    song: str,
+    location: str,
+    language: str,
+) -> Optional[dict]:
     """
     Check if we have cached results for this search query.
     Returns None if not found or expired.
     """
-    query_hash = _hash_query(artist, song, location)
+    query_hash = _hash_query(artist, song, location, language)
     key = f"search:{query_hash}"
 
     cached = _search_cache.get(key)
@@ -50,9 +60,15 @@ def get_cached_search(artist: str, song: str, location: str) -> Optional[dict]:
     return cached["data"]
 
 
-def store_search_cache(artist: str, song: str, location: str, results: dict):
+def store_search_cache(
+    artist: str,
+    song: str,
+    location: str,
+    language: str,
+    results: dict,
+):
     """Cache search results for a query."""
-    query_hash = _hash_query(artist, song, location)
+    query_hash = _hash_query(artist, song, location, language)
     key = f"search:{query_hash}"
 
     _search_cache[key] = {
