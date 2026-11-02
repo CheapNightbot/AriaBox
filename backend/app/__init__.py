@@ -2,9 +2,10 @@ import os
 import secrets
 from pathlib import Path
 
-from app.utils import start_temp_cleanup_thread
 from config import Config
 from flask import Flask
+
+from app.utils import start_temp_cleanup_thread
 
 
 def create_app(config=Config):

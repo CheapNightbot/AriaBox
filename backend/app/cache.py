@@ -94,7 +94,7 @@ def _store_search_result(service: str, item_id: int, data: dict):
     logger.debug(f"Cached {service} item: {item_id}")
 
 
-def get_cached_result(service: str, item_id: int) -> Optional[dict]:
+def get_cached_result(service: str, item_id: int) -> dict | None:
     """
     Retrieve a cached individual item.
     Returns None if not found or expired.

@@ -1,6 +1,5 @@
-from waitress import serve
-
 from app import create_app
+from waitress import serve
 
 
 def run_server():
