@@ -6,8 +6,9 @@ import threading
 import time
 from pathlib import Path
 
-from app.tagger import Metadata
 from flask import current_app
+
+from app.tagger import Metadata
 
 
 def get_current_settings() -> dict:
@@ -184,14 +185,16 @@ def start_temp_cleanup_thread(temp_dir: Path):
                     deleted_count = 0
 
                     for file_path in file_paths:
-                        if file_path.is_file():
-                            # Check if file is older than 24 hours (86400 seconds)
-                            if now - file_path.stat().st_mtime > 86400:
-                                try:
-                                    file_path.unlink()
-                                    deleted_count += 1
-                                except OSError as e:
-                                    logger.warning(f"Could not delete {file_path}: {e}")
+                        # Check if file is older than 24 hours (86400 seconds)
+                        if (
+                            file_path.is_file()
+                            and now - file_path.stat().st_mtime > 86400
+                        ):
+                            try:
+                                file_path.unlink()
+                                deleted_count += 1
+                            except OSError as e:
+                                logger.warning(f"Could not delete {file_path}: {e}")
 
                     if deleted_count > 0:
                         logger.info(
