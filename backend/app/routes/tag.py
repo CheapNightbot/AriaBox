@@ -89,6 +89,7 @@ def tag_file():
     temp_dir = (base_path / "temp").resolve()
 
     try:
+        temp_dir.relative_to(base_path)
         file_path = (temp_dir / f"{file_id}.{file_ext}").resolve(strict=True)
         file_path.relative_to(temp_dir)
     except (OSError, ValueError):
