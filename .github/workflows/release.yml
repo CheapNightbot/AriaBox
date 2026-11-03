@@ -67,7 +67,7 @@ jobs:
           PREV_TAG=$(git describe --tags --abbrev=0 ${GITHUB_REF_NAME}^ 2>/dev/null || git rev-list --max-parents=0 HEAD)
 
           # Get commit messages and author names, excluding merge commits
-          COMMITS=$(git log --pretty=format:"%s||%an" --no-merges ${PREV_TAG}..HEAD)
+          COMMITS=$(git log --pretty=format:"%s%x09%an" --no-merges "${PREV_TAG}..HEAD")
 
           # Initialize categories
           FEATURES=""
@@ -77,7 +77,7 @@ jobs:
           GENERAL=""
 
           # Sort commits into categories
-          while IFS='||' read -r commit author; do
+          while IFS=$'\t' read -r commit author; do
             [ -z "$commit" ] && continue
 
             if [[ "$commit" == feat:* ]] || [[ "$commit" == feat\(*\):* ]]; then
