@@ -12,6 +12,7 @@ RUN npm install -g pnpm
 COPY frontend/package.json frontend/pnpm-lock.yaml ./
 
 # Install dependencies (frozen-lockfile is the pnpm equivalent of npm ci)
+COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # Copy the rest of the frontend code
