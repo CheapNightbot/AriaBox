@@ -2,9 +2,10 @@ import hashlib
 import os
 import re
 
+from flask import Blueprint, current_app, request
+
 from app.logger import logger
 from app.utils import ALLOWED_EXTENSIONS, allowed_file
-from flask import Blueprint, current_app, request
 
 bp = Blueprint("upload", __name__, url_prefix="/api")
 
@@ -18,57 +19,70 @@ def upload_file():
     if not file.filename:
         return {"message": "No file selected!"}, 400
 
-    # Check if it's a valid audio file
+    # Check if it's a valid audio file.
     if not allowed_file(file.filename):
         return {
-            "message": f"File type not allowed. Please upload one of: {', '.join(ALLOWED_EXTENSIONS)}"
+            "message": (
+                "File type not allowed. Please upload one of: "
+                f"{', '.join(sorted(ALLOWED_EXTENSIONS))}"
+            )
         }, 400
 
-    # Calculate SHA-256 hash of the file (memory efficient, chunk by chunk)
+    max_file_size = current_app.config["MAX_AUDIO_FILE_BYTES"]
+
+    # Calculate SHA-256 and enforce the per-file size limit.
     file_hash = hashlib.sha256()
+    file_size = 0
+
     for chunk in iter(lambda: file.stream.read(8192), b""):
+        file_size += len(chunk)
+        if file_size > max_file_size:
+            return {
+                "message": "This file is too large. Please choose an audio file no larger than 100 MiB (about 105 MB)."
+            }, 413
         file_hash.update(chunk)
 
     file_id = file_hash.hexdigest()
 
-    # Reset file stream to the beginning so we can save it!
+    # Reset file stream to the beginning so it can be saved.
     file.stream.seek(0)
 
-    # Get original filename & extension
+    # Get the original filename and extension.
     original_filename = os.path.basename(file.filename)
     ext = os.path.splitext(original_filename)[1].lower()
 
     safe_filename = f"{file_id}{ext}"
 
-    # Save it to the temp folder!
+    # Save the file to the temp folder.
     data_dir = current_app.config.get("DATA_DIR")
-    assert data_dir
+    if not data_dir:
+        return {"message": "Server configuration error."}, 500
+
     temp_dir = os.path.join(data_dir, "temp")
     os.makedirs(temp_dir, exist_ok=True)
 
     file_path = os.path.join(temp_dir, safe_filename)
 
-    # Deduplication check ~
+    # Deduplication check.
     if os.path.exists(file_path):
-        logger.info(f"Duplicate file detected! Returning existing file_id: {file_id}")
+        logger.info("Duplicate file detected! Returning existing file_id: %s", file_id)
     else:
-        # Save the file to disk only if it's new
         file.save(file_path)
-        logger.info(f"File uploaded and saved to {file_path}")
+        logger.info("File uploaded and saved to %s", file_path)
 
-    # Try to extract the artist & song from the filename!
+    # Try to extract the artist and song from the filename.
     name_without_ext = os.path.splitext(original_filename)[0]
 
-    # Clean up the filename using regex ~
-    # Remove track numbers like "01. ", "1 - ", "01 "
+    # Remove track numbers like "01. ", "1 - ", or "01 ".
     name_without_ext = re.sub(r"^\d+[\.\-\s]+", "", name_without_ext).strip()
-    # Remove common suffixes like "(Official Video)", "[HQ]", "(Remastered)"
+
+    # Remove common suffixes like "(Official Video)", "[HQ]", "(Remastered)".
     name_without_ext = re.sub(r"[\(\[].*?[\)\]]", "", name_without_ext).strip()
 
     suggested_artist = ""
     suggested_song = name_without_ext
 
-    # Split by " - " if it exists (e.g., "Artist - Song.mp3")
+    # Split by " - " if it exists (e.g., "Artist - Song.mp3").
     if " - " in name_without_ext:
         parts = name_without_ext.split(" - ", 1)
         suggested_artist = parts[0].strip()

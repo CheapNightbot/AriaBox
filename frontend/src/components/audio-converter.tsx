@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { convertAudio } from "@/lib/api"
+import { convertAudio, MAX_AUDIO_FILE_BYTES, MAX_AUDIO_FILE_MESSAGE } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import { DownloadIcon, FileAudioIcon, Loader2Icon, UploadIcon, XIcon } from "lucide-react"
 import { useState } from "react"
@@ -30,6 +30,10 @@ export default function AudioConverter() {
 
   const handleConvert = async () => {
     if (!file) return
+    if (file.size > MAX_AUDIO_FILE_BYTES) {
+      toast.error(MAX_AUDIO_FILE_MESSAGE)
+      return
+    }
 
     setIsConverting(true)
     try {

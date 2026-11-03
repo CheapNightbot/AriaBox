@@ -12,14 +12,24 @@ def create_app(config=Config):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config)
 
-    # Make sure the data directories exists!
+    # Allow audio files up to 100 MiB, with some room for multipart overhead.
+    app.config["MAX_AUDIO_FILE_BYTES"] = 100 * 1024 * 1024
+    app.config["MAX_CONTENT_LENGTH"] = 105 * 1024 * 1024
+
+    @app.errorhandler(413)
+    def request_entity_too_large(_error):
+        return {
+            "message": "This file is too large. Please choose an audio file no larger than 100 MiB (about 105 MB)."
+        }, 413
+
+    # Make sure the data directories exist!
     os.makedirs(config.DATA_DIR, exist_ok=True)
     os.makedirs(config.CONFIG_DIR, exist_ok=True)
 
-    # Start the background cleanup thread
+    # Start the background cleanup thread.
     start_temp_cleanup_thread(Path(config.DATA_DIR, "temp"))
 
-    # Make sure secret key was passed, otherwise generate new one
+    # Make sure a secret key was passed; otherwise generate one.
     # No environment variable was provided.
     if not app.config.get("SECRET_KEY"):
         # Check if previously generated one exists.
@@ -27,7 +37,8 @@ def create_app(config=Config):
             with open(config.SECRET_KEY_FILE, "r") as f:
                 app.config["SECRET_KEY"] = f.read().strip()
             print(
-                "⚠️ [WARNING] No SECRET_KEY in environment. Using auto-generated key from .secret_key file."
+                "⚠️ [WARNING] No SECRET_KEY in environment. "
+                "Using auto-generated key from .secret_key file."
             )
         # No previously generated secret. Generate new one, use and save it.
         else:
@@ -36,7 +47,9 @@ def create_app(config=Config):
                 f.write(new_secret)
             app.config["SECRET_KEY"] = new_secret
             print(
-                "⚠️ [WARNING] No SECRET_KEY provided! Auto-generated and saved to .secret_key. Please set SECRET_KEY in .env for production!"
+                "⚠️ [WARNING] No SECRET_KEY provided! "
+                "Auto-generated and saved to .secret_key. "
+                "Please set SECRET_KEY in .env for production!"
             )
     # Environment variable WAS provided!
     else:
@@ -44,10 +57,11 @@ def create_app(config=Config):
         if os.path.exists(config.SECRET_KEY_FILE):
             os.remove(config.SECRET_KEY_FILE)
             print(
-                "✅ [INFO] Using SECRET_KEY from environment. Removed old .secret_key file."
+                "✅ [INFO] Using SECRET_KEY from environment. "
+                "Removed old .secret_key file."
             )
 
-    # Register blueprints
+    # Register blueprints.
     from .routes import (
         cache,
         convert,
@@ -69,7 +83,8 @@ def create_app(config=Config):
     app.register_blueprint(settings.bp)
     app.register_blueprint(tag.bp)
     app.register_blueprint(upload.bp)
-    # Register frontend LAST so it doesn't accidentally catch /api requests!
+
+    # Register frontend LAST so it doesn't accidentally catch /api requests.
     app.register_blueprint(frontend.bp)
 
     return app

@@ -12,7 +12,7 @@ import { Field } from "@/components/ui/field"
 import { Label } from "@/components/ui/label"
 import { Progress } from "@/components/ui/progress"
 import { Switch } from "@/components/ui/switch"
-import { applyMetadata, deleteAudioFile, uploadAudioFile } from "@/lib/api"
+import { applyMetadata, deleteAudioFile, MAX_AUDIO_FILE_BYTES, MAX_AUDIO_FILE_MESSAGE, uploadAudioFile } from "@/lib/api"
 import type { Album, Track } from "@/types"
 import { AlertCircle, CheckCircle2, FileAudio, Upload } from "lucide-react"
 import {
@@ -63,6 +63,11 @@ function ApplyMetadataDialog({
   }, [open, track, album])
 
   const handleFileChange = async (selectedFile: File) => {
+    if (selectedFile.size > MAX_AUDIO_FILE_BYTES) {
+      toast.error(MAX_AUDIO_FILE_MESSAGE)
+      return
+    }
+
     setFile(selectedFile)
     setStatus("uploading")
     setProgress(0)

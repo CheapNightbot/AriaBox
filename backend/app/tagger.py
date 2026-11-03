@@ -4,11 +4,14 @@ The Tagger Module - Handles writing metadata to audio files.
 
 import base64
 import io
+import ipaddress
+import socket
+import warnings
 from pathlib import Path
 from typing import Optional
+from urllib.parse import urljoin, urlsplit
 
 import requests
-from app.logger import logger
 from mutagen import File as MutagenFile
 from mutagen.flac import FLAC, Picture
 from mutagen.id3 import (
@@ -32,6 +35,8 @@ from mutagen.oggopus import OggOpus
 from mutagen.oggvorbis import OggVorbis
 from mutagen.wave import WAVE
 from PIL import Image
+
+from app.logger import logger
 
 
 class Metadata:
@@ -122,57 +127,172 @@ class Metadata:
         )
 
 
+MAX_COVER_BYTES = 10 * 1024 * 1024
+MAX_COVER_PIXELS = 20_000_000
+MAX_COVER_REDIRECTS = 3
+
+ALLOWED_COVER_HOST_SUFFIXES = (
+    "dzcdn.net",  # Deezer
+    "mzstatic.com",  # Apple Music
+    # "scdn.co", # Spotify
+    "ytimg.com",  # YT Music
+    # Not sure about KKBOX ~
+)
+
+
 def _download_cover(url: str) -> Optional[tuple[bytes, str]]:
     """
     Download cover art and validate it using Pillow.
     Returns (bytes, mime_type) or None if download fails.
     """
-    if not url:
+    if not isinstance(url, str) or not url:
         return None
 
+    allowed_redirect_statuses = {301, 302, 303, 307, 308}
+
+    def validate_cover_url(candidate_url: str) -> str:
+        parsed = urlsplit(candidate_url)
+
+        if parsed.scheme.lower() != "https":
+            raise ValueError("Cover URL must use HTTPS.")
+
+        if not parsed.hostname or parsed.username or parsed.password:
+            raise ValueError("Cover URL has an invalid hostname or credentials.")
+
+        hostname = parsed.hostname.rstrip(".").lower()
+        if not any(
+            hostname == suffix or hostname.endswith(f".{suffix}")
+            for suffix in ALLOWED_COVER_HOST_SUFFIXES
+        ):
+            raise ValueError("Cover URL host is not an approved image CDN.")
+
+        # Reject hostnames resolving to loopback, private, link-local,
+        # reserved, or otherwise non-public IP addresses.
+        addresses = socket.getaddrinfo(
+            hostname,
+            parsed.port or 443,
+            type=socket.SOCK_STREAM,
+        )
+        if not addresses:
+            raise ValueError("Cover URL host did not resolve.")
+
+        for address in addresses:
+            ip = ipaddress.ip_address(address[4][0])
+            if not ip.is_global:
+                raise ValueError("Cover URL host resolved to a non-public IP address.")
+
+        return candidate_url
+
     try:
-        # Make a HEAD request first (security: check headers without downloading)
-        head_response = requests.head(url, timeout=5, allow_redirects=True)
-        content_type = head_response.headers.get("Content-Type", "").lower()
+        current_url = validate_cover_url(url)
 
-        # Check if the server claims it is an image
-        if not content_type.startswith("image/"):
-            logger.warning(f"URL does not point to an image: {content_type}")
-            return None
+        # Follow a small number of redirects manually so every destination
+        # gets the same URL and host validation.
+        for redirect_count in range(MAX_COVER_REDIRECTS + 1):
+            with requests.get(
+                current_url,
+                timeout=(5, 10),
+                allow_redirects=False,
+                stream=True,
+            ) as response:
+                if response.status_code in allowed_redirect_statuses:
+                    location = response.headers.get("Location")
+                    if not location:
+                        logger.warning(
+                            "Cover image redirect did not include a location."
+                        )
+                        return None
 
-        # If it is an image, THEN download it
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        image_data = response.content
+                    if redirect_count >= MAX_COVER_REDIRECTS:
+                        logger.warning("Cover image exceeded the redirect limit.")
+                        return None
 
-        # Validate it's actually a valid image using Pillow!
-        try:
-            img = Image.open(io.BytesIO(image_data))
-            img.verify()  # Verify it's a valid image
+                    current_url = validate_cover_url(urljoin(current_url, location))
+                    continue
 
-            # Re-open to get format (verify() corrupts the image object)
-            img = Image.open(io.BytesIO(image_data))
+                response.raise_for_status()
 
-            # Determine the actual MIME type from the image format
-            format_map = {
-                "JPEG": "image/jpeg",
-                "PNG": "image/png",
-                "WEBP": "image/webp",
-                "GIF": "image/gif",
-            }
-            mime_type = format_map.get(img.format or "JPEG", "image/jpeg")
+                content_type = response.headers.get("Content-Type", "").lower()
+                if not content_type.startswith("image/"):
+                    logger.warning(
+                        "URL does not point to an image: %s",
+                        content_type,
+                    )
+                    return None
 
-            logger.info(
-                f"Downloaded and validated cover art: {mime_type} ({len(image_data)} bytes)"
-            )
-            return image_data, mime_type
+                content_length = response.headers.get("Content-Length")
+                if content_length:
+                    try:
+                        if int(content_length) > MAX_COVER_BYTES:
+                            logger.warning("Cover image exceeds the size limit.")
+                            return None
+                    except ValueError:
+                        logger.warning("Cover image has an invalid Content-Length.")
 
-        except Exception as e:
-            logger.warning(f"Downloaded file is not a valid image: {e}")
-            return None
+                image_chunks = []
+                image_size = 0
+
+                for chunk in response.iter_content(chunk_size=64 * 1024):
+                    if not chunk:
+                        continue
+
+                    image_size += len(chunk)
+                    if image_size > MAX_COVER_BYTES:
+                        logger.warning("Cover image exceeds the size limit.")
+                        return None
+
+                    image_chunks.append(chunk)
+
+            image_data = b"".join(image_chunks)
+
+            # Validate the downloaded bytes as an image and cap decoded dimensions.
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("error", Image.DecompressionBombWarning)
+
+                    img = Image.open(io.BytesIO(image_data))
+                    if img.width * img.height > MAX_COVER_PIXELS:
+                        logger.warning("Cover image dimensions exceed the pixel limit.")
+                        return None
+
+                    img.verify()
+
+                    # Re-open to get the format (verify() invalidates the image object).
+                    img = Image.open(io.BytesIO(image_data))
+                    if img.width * img.height > MAX_COVER_PIXELS:
+                        logger.warning("Cover image dimensions exceed the pixel limit.")
+                        return None
+
+                    format_map = {
+                        "JPEG": "image/jpeg",
+                        "PNG": "image/png",
+                        "WEBP": "image/webp",
+                        "GIF": "image/gif",
+                    }
+                    mime_type = format_map.get(img.format or "")
+
+                    if not mime_type:
+                        logger.warning(
+                            "Downloaded image uses an unsupported format: %s",
+                            img.format,
+                        )
+                        return None
+
+                logger.info(
+                    "Downloaded and validated cover art: %s (%s bytes)",
+                    mime_type,
+                    len(image_data),
+                )
+                return image_data, mime_type
+
+            except Exception as e:
+                logger.warning("Downloaded file is not a valid image: %s", e)
+                return None
+
+        return None
 
     except Exception as e:
-        logger.warning(f"Failed to download cover art from {url}: {e}")
+        logger.warning("Failed to download cover art from %s: %s", url, e)
         return None
 
 

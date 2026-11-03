@@ -1,7 +1,18 @@
-import type { AppSettings, SearchResults, UploadResponse } from "@/types";
-import { toast } from "sonner";
+import type { AppSettings, SearchResults, UploadResponse } from "@/types"
+import { toast } from "sonner"
 
 const API_BASE_URL = "/api";
+
+export const MAX_AUDIO_FILE_BYTES = 100 * 1024 * 1024
+
+export const MAX_AUDIO_FILE_MESSAGE =
+  "This file is too large. Please choose an audio file no larger than 100 MiB (about 105 MB)."
+
+function checkAudioFileSize(file: File): void {
+  if (file.size > MAX_AUDIO_FILE_BYTES) {
+    throw new Error(MAX_AUDIO_FILE_MESSAGE)
+  }
+}
 
 export async function fetchSettings(): Promise<AppSettings> {
   const response = await fetch(`${API_BASE_URL}/settings`);
@@ -66,6 +77,8 @@ export async function uploadAudioFile(
   file: File,
   onProgress?: (progress: number) => void,
 ): Promise<UploadResponse> {
+  checkAudioFileSize(file);
+
   const formData = new FormData();
   formData.append("file", file);
 
@@ -187,6 +200,8 @@ export async function convertAudio(
   file: File,
   format: string,
 ): Promise<Response> {
+  checkAudioFileSize(file);
+
   const formData = new FormData()
   formData.append("file", file)
   formData.append("format", format)
